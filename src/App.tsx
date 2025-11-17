@@ -1,41 +1,38 @@
-import React, { useState, type JSX } from 'react';
+import { useState, type JSX } from 'react';
 
 function App(): JSX.Element {
   const [count, setCount] = useState<number>(0);
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
 
   return (
-    <div style={{ fontFamily: 'sans-serif', padding: 20 }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ margin: 0 }}>Planning Poker</h1>
+    <div className="font-sans p-5">
+      <header className="flex justify-between items-center">
+        <h1 className="text-2xl font-semibold m-0">Planning Poker</h1>
         <button
           onClick={() => setMenuOpen(open => !open)}
           aria-expanded={menuOpen}
-          style={{ padding: '8px 12px' }}
+          className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
         >
           Menu
         </button>
       </header>
 
       {menuOpen && (
-        <nav
-          style={{
-            border: '1px solid #ddd',
-            padding: 10,
-            marginTop: 10,
-            width: 220,
-            borderRadius: 4,
-            background: '#fafafa',
-          }}
-        >
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-            <li style={{ marginBottom: 8 }}>
-              <button onClick={() => alert('Option 1')} style={{ width: '100%' }}>
+        <nav className="border border-gray-200 p-3 mt-3 w-56 rounded bg-gray-50 shadow-sm">
+          <ul className="space-y-2 p-0 m-0 list-none">
+            <li>
+              <button
+                onClick={() => alert('Option 1')}
+                className="w-full text-left bg-white border border-gray-200 rounded px-3 py-2 hover:bg-gray-100"
+              >
                 Option 1
               </button>
             </li>
             <li>
-              <button onClick={() => alert('Option 2')} style={{ width: '100%' }}>
+              <button
+                onClick={() => alert('Option 2')}
+                className="w-full text-left bg-white border border-gray-200 rounded px-3 py-2 hover:bg-gray-100"
+              >
                 Option 2
               </button>
             </li>
@@ -43,18 +40,21 @@ function App(): JSX.Element {
         </nav>
       )}
 
-      <main style={{ marginTop: 20 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <main className="mt-6">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => setCount(c => c + 1)}
-            style={{ padding: '10px 14px', fontSize: 16 }}
+            className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
           >
             +1
           </button>
-          <div>
-            Compteur : <strong>{count}</strong>
+          <div className="text-lg">
+            Compteur : <strong className="ml-1">{count}</strong>
           </div>
-          <button onClick={() => setCount(0)} style={{ marginLeft: 8 }}>
+          <button
+            onClick={() => setCount(0)}
+            className="ml-4 px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200"
+          >
             Réinitialiser
           </button>
         </div>

@@ -1,5 +1,6 @@
 import { useState, type JSX } from 'react';
 import { CreateSession } from './script/CreateSession';
+import { Login } from './script/Login';
 
 /**
  * Composant principal de l'application "Planning Poker".
@@ -42,6 +43,16 @@ function App(): JSX.Element {
    */
   const handleJoinSession = (): void => {
     alert('Rejoindre une session');
+  };
+
+  /**
+   * Handler appelé lorsque l'utilisateur clique sur "Se connecter".
+   * Pour l'instant il affiche simplement une alerte.
+   *
+   * @returns {void}
+   */
+  const handleLogin = (): void => {
+    Login();
   };
 
   return (
@@ -94,6 +105,21 @@ function App(): JSX.Element {
                   <div>
                     <div className="text-sm font-medium text-gray-800">Rejoindre une session</div>
                     <div className="text-xs text-gray-500">Saisir un code ou lier une réunion</div>
+                  </div>
+                </button>
+              </div>
+
+              <div className="p-4">
+                <button
+                  onClick={handleLogin}
+                  className="w-full flex items-center gap-3 px-4 py-3 bg-white rounded-md hover:bg-gray-50 transition text-left"
+                >
+                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A2 2 0 0122 9.618V14a2 2 0 01-1.447 1.934L15 18v-8zM3 8v8a2 2 0 002 2h8" />
+                  </svg>
+                  <div>
+                    <div className="text-sm font-medium text-gray-800">Login</div>
+                    <div className="text-xs text-gray-500">Saisir un pseudo</div>
                   </div>
                 </button>
               </div>

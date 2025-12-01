@@ -1,7 +1,7 @@
 {
   "name": "planning-poker",
   "private": true,
-  "version": "1.0.0", 
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "author": "",
@@ -15,6 +15,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.86.0",
     "@tailwindcss/vite": "^4.1.14",
     "babel": "^5.8.38",
     "babel-jest": "^30.2.0",
@@ -35,10 +36,10 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^16.4.0",
+    "jest": "^29.7.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.45.0",
-    "vite": "npm:rolldown-vite@7.1.14",
-    "jest": "^29.7.0"
+    "vite": "npm:rolldown-vite@7.1.14"
   },
   "overrides": {
     "vite": "npm:rolldown-vite@7.1.14"

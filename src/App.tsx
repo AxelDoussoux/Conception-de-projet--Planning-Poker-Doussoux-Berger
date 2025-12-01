@@ -1,4 +1,5 @@
 import { useState, type JSX } from 'react';
+import { CreateSession } from './script/CreateSession';
 
 /**
  * Composant principal de l'application "Planning Poker".
@@ -30,7 +31,7 @@ function App(): JSX.Element {
    * @returns {void}
    */
   const handleCreateSession = (): void => {
-    alert('Créer une session');
+    CreateSession();
   };
 
   /**

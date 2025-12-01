@@ -1,5 +1,5 @@
 import { useState, type JSX } from 'react';
-
+import { SlUser } from "react-icons/sl";
 /**
  * Composant principal de l'application "Planning Poker".
  *
@@ -29,8 +29,10 @@ function App(): JSX.Element {
    *
    * @returns {void}
    */
+  
+  const [showCreateForm, setShowCreateForm] = useState(false);
   const handleCreateSession = (): void => {
-    alert('Créer une session');
+      setShowCreateForm(true);
   };
 
   /**
@@ -39,8 +41,9 @@ function App(): JSX.Element {
    *
    * @returns {void}
    */
+  const [showJoinForm, setShowJoinForm] = useState(false);
   const handleJoinSession = (): void => {
-    alert('Rejoindre une session');
+      setShowJoinForm(true);
   };
 
   return (
@@ -67,7 +70,20 @@ function App(): JSX.Element {
         {menuOpen && (
           <nav className="px-6 pb-6" aria-label="Panneau de menu principal">
             <div className="bg-gray-50 border border-gray-100 rounded-lg shadow-inner divide-y divide-gray-100 overflow-hidden">
-              <div className="p-4">
+              <div className="p-6">
+                <div className="w-full flex items-center gap-3 px-4 py-3 bg-white rounded-md">
+                <SlUser />
+                <div className="flex items-center gap-3">
+                <h2 className="text-sm font-medium text-gray-800">Entrez un pseudo</h2>
+                <input 
+                  type="text"
+                  placeholder="Votre pseudo..."
+                  className="text-xs text-gray-500 mt-3 w-full px-3 py-2 border rounded-lg"
+                />
+                </div>
+                </div>
+              </div>  
+              <div className="p-6">
                 <button
                   onClick={handleCreateSession}
                   className="w-full flex items-center gap-3 px-4 py-3 bg-white rounded-md hover:bg-gray-50 transition text-left"
@@ -81,8 +97,27 @@ function App(): JSX.Element {
                   </div>
                 </button>
               </div>
+              {showCreateForm && (
+              <div className="p-6 border-t">
+                <div className="flex justify-end">
+                <button
+                  onClick={() => setShowCreateForm(false)}
+                  aria-label="Fermer le formulaire"
+                  className="text-gray-400 hover:text-gray-600 text-xs leading-none">Fermer</button>
+                </div>
+                <input 
+                  type="text"
+                  placeholder="Nom de la session..."
+                  className="text-xs text-gray-500 mt-3 w-full px-3 py-2 border rounded-lg"
+                />
+                <button className="mt-3 px-4 py-2 bg-indigo-600 text-white rounded-lg">
+                  Valider
+                </button>
 
-              <div className="p-4">
+            </div>
+            )}
+
+              <div className="p-6">
                 <button
                   onClick={handleJoinSession}
                   className="w-full flex items-center gap-3 px-4 py-3 bg-white rounded-md hover:bg-gray-50 transition text-left"
@@ -96,6 +131,24 @@ function App(): JSX.Element {
                   </div>
                 </button>
               </div>
+              {showJoinForm && (
+              <div className="p-6 border-t">
+                <div className="flex justify-end">
+                <button
+                  onClick={() => setShowJoinForm(false)}
+                  aria-label="Fermer le formulaire"
+                  className="text-gray-400 hover:text-gray-600 text-xs leading-none">Fermer</button>
+                  </div>
+                <input 
+                  type="text"
+                  placeholder="Code de session..."
+                  className="text-xs text-gray-500 mt-3 w-full px-3 py-2 border rounded-lg"
+                />
+                <button className="mt-3 px-4 py-2 bg-indigo-600 text-white rounded-lg">
+                  Valider
+                </button>
+              </div>
+            )}
 
               <div className="p-3 bg-gray-100 text-center text-xs text-gray-500">
                 Astuce : utilisez le menu pour créer ou rejoindre rapidement une session.

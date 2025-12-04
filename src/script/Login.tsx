@@ -1,24 +1,49 @@
 import { supabase, type Participant } from '../lib/supabase';
 
 /**
- * Pseudo par défaut du participant à connecter.
- * @constant {string}
+ * Vérifie si un pseudo est déjà utilisé dans la base de données.
+ * 
+ * @param {string} pseudo - Le pseudo à vérifier.
+ * @returns {Promise<boolean>} True si le pseudo existe déjà, false sinon.
  */
-const pseudo = "Participant 1";
+export async function isPseudoExists(pseudo: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('participants')
+    .select('name')
+    .eq('name', pseudo)
+    .maybeSingle();
+  
+  if (error) {
+    console.error('Erreur lors de la vérification du pseudo :', error);
+    return false;
+  }
+  
+  return data !== null;
+}
 
 /**
  * Connecte un participant en l'enregistrant dans la base de données.
  * Crée une entrée pour le participant et affiche le résultat de la connexion.
  * 
+ * @param {string} pseudo - Le pseudo du participant à connecter.
  * @returns {void}
  */
-function Login(): void {
+export function Login(pseudo: string): void {
   /**
    * Crée un nouveau participant dans la base de données Supabase.
    * 
+   * @param {string} pseudo - Le pseudo du participant à créer.
    * @returns {Promise<Participant | null>} Le participant créé ou null en cas d'erreur.
    */
-  async function createParticipant(): Promise<Participant | null> {
+  async function createParticipant(pseudo: string): Promise<Participant | null> {
+    // Vérifier si le pseudo existe déjà
+    const exists: boolean = await isPseudoExists(pseudo);
+    
+    if (exists) {
+      alert('Ce pseudo est déjà utilisé. Veuillez en choisir un autre.');
+      return null;
+    }
+    
     const { data, error } = await supabase
       .from('participants')
       .insert([{ name: pseudo }])
@@ -32,7 +57,7 @@ function Login(): void {
     return data;
   }
   
-  createParticipant().then((participant) => {
+  createParticipant(pseudo).then((participant: Participant | null) => {
     if (participant) {
       alert(`Participant connecté : Pseudo = ${participant.name}`);
     } else {
@@ -40,5 +65,3 @@ function Login(): void {
     }
   });
 }
-
-export { Login };

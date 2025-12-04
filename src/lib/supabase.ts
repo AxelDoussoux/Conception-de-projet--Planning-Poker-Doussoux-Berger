@@ -16,7 +16,7 @@ export interface Session {
 
 export interface Participant {
   id: string;
-  session_id: string;
+  session_id: string | null;  // Peut être null au départ
   name: string;
   joined_at: string;
 }

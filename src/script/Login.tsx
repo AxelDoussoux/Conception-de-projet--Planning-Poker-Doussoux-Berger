@@ -6,7 +6,7 @@ import { supabase, type Participant } from '../lib/supabase';
  * @param {string} pseudo - Le pseudo à vérifier.
  * @returns {Promise<boolean>} True si le pseudo existe déjà, false sinon.
  */
-export async function isPseudoExists(pseudo: string): Promise<boolean> {
+async function isPseudoExists(pseudo: string): Promise<boolean> {
   const { data, error } = await supabase
     .from('participants')
     .select('name')
@@ -19,6 +19,34 @@ export async function isPseudoExists(pseudo: string): Promise<boolean> {
   }
   
   return data !== null;
+}
+
+/**
+ * Vérifie si un participant existe déjà avec le pseudo donné.
+ * 
+ * @param {string} pseudo - Le pseudo du participant à vérifier.
+ * @returns {Promise<Participant | null>} Le participant trouvé ou null s'il n'existe pas.
+ */
+export async function findParticipantByName(pseudo: string): Promise<Participant | null> {
+  // Vérifier d'abord si le pseudo existe
+  const exists: boolean = await isPseudoExists(pseudo);
+  
+  if (!exists) {
+    return null;
+  }
+  
+  const { data, error } = await supabase
+    .from('participants')
+    .select('*')
+    .eq('name', pseudo)
+    .maybeSingle();
+  
+  if (error) {
+    console.error('Erreur lors de la recherche du participant :', error);
+    return null;
+  }
+  
+  return data;
 }
 
 /**

@@ -1,11 +1,22 @@
-import { supabase, type Session } from '../lib/supabase';
+import { supabase, type Session, type Participant } from '../lib/supabase';
+import { addParticipantToSession } from './JoinSession';
+import { findParticipantByName } from './Login';
 
-const sessionName = 'Session 1'; // Exemple de test nom de session
-
+/**
+ * Génère un code aléatoire à 6 chiffres.
+ * 
+ * @returns {string} Un code numérique entre 100000 et 999999.
+ */
 function generateCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
+/**
+ * Vérifie si un code de session est unique dans la base de données.
+ * 
+ * @param {string} code - Le code à vérifier.
+ * @returns {Promise<boolean>} True si le code est unique, false sinon.
+ */
 async function isCodeUnique(code: string): Promise<boolean> {
   const { data, error } = await supabase
     .from('sessions')
@@ -13,17 +24,25 @@ async function isCodeUnique(code: string): Promise<boolean> {
     .eq('code', code)
     .single();
   
-  if (error && error.code === 'PGRST116') { // Aucune session trouvée avec ce code
+  if (error && error.code === 'PGRST116') {
+    // Aucune session trouvée avec ce code
     return true;
   }
   
   return !data;
 }
 
+/**
+ * Génère un code unique pour une session en vérifiant son unicité.
+ * Effectue jusqu'à 10 tentatives pour trouver un code unique.
+ * 
+ * @returns {Promise<string>} Un code unique à 6 chiffres.
+ * @throws {Error} Si aucun code unique n'a pu être généré après 10 tentatives.
+ */
 async function generateUniqueCode(): Promise<string> {
-  let code = generateCode();
-  let attempts = 0;
-  const maxAttempts = 10;
+  let code: string = generateCode();
+  let attempts: number = 0;
+  const maxAttempts: number = 10;
   
   while (!(await isCodeUnique(code)) && attempts < maxAttempts) {
     code = generateCode();
@@ -37,40 +56,71 @@ async function generateUniqueCode(): Promise<string> {
   return code;
 }
 
-function CreateSession() {
+/**
+ * Crée une nouvelle session de Planning Poker.
+ * Vérifie qu'un participant existe, génère un code unique, crée la session 
+ * et connecte le participant à cette session.
+ * 
+ * @param {string} sessionName - Le nom de la session à créer.
+ * @param {string} pseudo - Le pseudo du participant créateur.
+ * @returns {void}
+ */
+export function CreateSession(sessionName: string, pseudo: string): void {
   /**
-   * Crée une nouvelle session dans la base de données Supabase.
-   * @returns {Promise<Session | null>} La session créée ou null en cas d'erreur.
+   * Crée une nouvelle session dans la base de données Supabase et y connecte le participant.
+   * 
+   * @returns {Promise<void>}
    */
-
-  async function createNewSession(): Promise<Session | null> {
+  async function createNewSession(): Promise<void> {
     try {
-      const uniqueCode = await generateUniqueCode();
+      // Vérifier que le participant existe
+      const participant: Participant | null = await findParticipantByName(pseudo.trim());
       
-      const { data, error } = await supabase
+      if (!participant) {
+        alert('Participant introuvable. Veuillez d\'abord vous connecter.');
+        return;
+      }
+      
+      // Vérifier si le participant n'est pas déjà dans une session
+      if (participant.session_id) {
+        alert('Vous êtes déjà connecté à une session.');
+        return;
+      }
+      
+      // Générer un code unique
+      const uniqueCode: string = await generateUniqueCode();
+      
+      // Créer la session
+      const { data: session, error } = await supabase
         .from('sessions')
         .insert([{ name: sessionName, is_active: true, code: uniqueCode }])
         .select()
         .single();
       
-      if (error) {
+      if (error || !session) {
         console.error('Erreur lors de la création de la session :', error);
-        return null;
+        alert('Échec de la création de la session.');
+        return;
       }
-      return data;
+      
+      // Typer explicitement la session
+      const createdSession: Session = session as Session;
+      
+      // Connecter le participant à la session
+      const connectedParticipant: Participant | null = await addParticipantToSession(createdSession.id, participant.id);
+      
+      if (!connectedParticipant) {
+        alert('Session créée mais échec de la connexion du participant.');
+        return;
+      }
+      
+      alert(`Session créée avec succès !\n\nNom : ${createdSession.name}\nCode : ${createdSession.code}\nParticipant : ${connectedParticipant.name}`);
+      
     } catch (error) {
-      console.error('Erreur lors de la génération du code unique :', error);
-      return null;
+      console.error('Erreur lors de la création de la session :', error);
+      alert('Échec de la création de la session.');
     }
   }
 
-  createNewSession().then((session) => {
-    if (session) {
-      alert(`Session créée avec succès : ID = ${session.id}, Nom = ${session.name}, Code = ${session.code}`);
-    } else {
-      alert('Échec de la création de la session.');
-    }
-  });
+  createNewSession();
 }
-
-export { CreateSession };

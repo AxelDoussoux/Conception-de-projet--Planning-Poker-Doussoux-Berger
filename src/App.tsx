@@ -39,7 +39,7 @@ function App(): JSX.Element {
   const [sessionCode, setSessionCode] = useState<string>('');
 
   // Récupérer les fonctions et données du contexte de session
-  const { currentSession, setCurrentSession, setCurrentParticipant } = useSession();
+  const { currentSession} = useSession();
 
   /**
    * Bascule l'état d'ouverture du menu.

@@ -54,9 +54,13 @@ export async function findParticipantByName(pseudo: string): Promise<Participant
  * Crée une entrée pour le participant et affiche le résultat de la connexion.
  * 
  * @param {string} pseudo - Le pseudo du participant à connecter.
+ * @param {Function} setCurrentParticipant - Fonction pour sauvegarder le participant dans le contexte.
  * @returns {void}
  */
-export function Login(pseudo: string): void {
+export function Login(
+  pseudo: string,
+  setCurrentParticipant: (participant: Participant | null) => void
+): void {
   /**
    * Crée un nouveau participant dans la base de données Supabase.
    * 
@@ -87,6 +91,8 @@ export function Login(pseudo: string): void {
   
   createParticipant(pseudo).then((participant: Participant | null) => {
     if (participant) {
+      // Sauvegarder le participant dans le contexte
+      setCurrentParticipant(participant);
       alert(`Participant connecté : Pseudo = ${participant.name}`);
     } else {
       alert('Échec de la connexion du participant.');

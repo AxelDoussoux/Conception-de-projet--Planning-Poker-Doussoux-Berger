@@ -39,7 +39,7 @@ function App(): JSX.Element {
   const [sessionCode, setSessionCode] = useState<string>('');
 
   // Récupérer les fonctions et données du contexte de session
-  const { currentSession} = useSession();
+  const { currentSession, setCurrentSession, setCurrentParticipant } = useSession();
 
   /**
    * Bascule l'état d'ouverture du menu.
@@ -63,7 +63,7 @@ function App(): JSX.Element {
       alert('Veuillez saisir un nom de session.');
       return;
     }
-    CreateSession(sessionName, pseudo);
+    CreateSession(sessionName, pseudo, setCurrentSession, setCurrentParticipant);
   };
 
   /**
@@ -80,7 +80,7 @@ function App(): JSX.Element {
       alert('Veuillez saisir le code de session.');
       return;
     }
-    JoinSession(sessionCode, pseudo);
+    JoinSession(sessionCode, pseudo, setCurrentSession, setCurrentParticipant);
   };
 
   /**
@@ -93,7 +93,7 @@ function App(): JSX.Element {
       alert('Veuillez saisir votre pseudo.');
       return;
     }
-    Login(pseudo);
+    Login(pseudo, setCurrentParticipant);
   };
 
   /**

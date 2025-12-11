@@ -1,7 +1,6 @@
 import { supabase, type Session, type Participant } from '../lib/supabase';
 import { addParticipantToSession } from './JoinSession';
 import { findParticipantByName } from './Login';
-import { useSession } from '../context/SessionContext.tsx';
 
 /**
  * Génère un code aléatoire à 6 chiffres.
@@ -64,13 +63,16 @@ async function generateUniqueCode(): Promise<string> {
  * 
  * @param {string} sessionName - Le nom de la session à créer.
  * @param {string} pseudo - Le pseudo du participant créateur.
+ * @param {Function} setCurrentSession - Fonction pour sauvegarder la session dans le contexte.
+ * @param {Function} setCurrentParticipant - Fonction pour sauvegarder le participant dans le contexte.
  * @returns {void}
  */
-export function CreateSession(sessionName: string, pseudo: string): void {
-  
-  // Récupérer les fonctions et données du contexte de session
-  const { setCurrentSession, setCurrentParticipant } = useSession();
-
+export function CreateSession(
+  sessionName: string, 
+  pseudo: string,
+  setCurrentSession: (session: Session | null) => void,
+  setCurrentParticipant: (participant: Participant | null) => void
+): void {
   /**
    * Crée une nouvelle session dans la base de données Supabase et y connecte le participant.
    * 

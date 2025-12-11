@@ -106,7 +106,8 @@ function App(): JSX.Element {
       alert('Aucune session active à désactiver.');
       return;
     }
-    DisableSession(currentSession.id);
+    console.log('Désactivation de la session avec ID :', currentSession.id);
+    DisableSession(currentSession.id, setCurrentSession);
   };
 
   return (

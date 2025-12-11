@@ -22,7 +22,7 @@ async function isCodeUnique(code: string): Promise<boolean> {
     .from('sessions')
     .select('code')
     .eq('code', code)
-    .single();
+    .maybeSingle();
   
   if (error && error.code === 'PGRST116') {
     // Aucune session trouvée avec ce code

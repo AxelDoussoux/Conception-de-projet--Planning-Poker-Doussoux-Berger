@@ -3,6 +3,7 @@ import { CreateSession } from './script/CreateSession';
 import { JoinSession } from './script/JoinSession';
 import { DisableSession } from './script/DisableSession';
 import { Login } from './script/Login';
+import { useSession } from './context/SessionContext';
 
 /**
  * Composant principal de l'application "Planning Poker".
@@ -36,6 +37,9 @@ function App(): JSX.Element {
    * @type {string}
    */
   const [sessionCode, setSessionCode] = useState<string>('');
+
+  // Récupérer les fonctions et données du contexte de session
+  const { currentSession, setCurrentSession, setCurrentParticipant } = useSession();
 
   /**
    * Bascule l'état d'ouverture du menu.
@@ -98,7 +102,11 @@ function App(): JSX.Element {
    * @returns {void}
    */
   const handleDisableSession = (): void => {
-    DisableSession(sessionCode);
+    if (!currentSession) {
+      alert('Aucune session active à désactiver.');
+      return;
+    }
+    DisableSession(currentSession.id);
   };
 
   return (

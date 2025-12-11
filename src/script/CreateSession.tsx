@@ -1,6 +1,7 @@
 import { supabase, type Session, type Participant } from '../lib/supabase';
 import { addParticipantToSession } from './JoinSession';
 import { findParticipantByName } from './Login';
+import { useSession } from '../context/SessionContext.tsx';
 
 /**
  * Génère un code aléatoire à 6 chiffres.
@@ -66,6 +67,8 @@ async function generateUniqueCode(): Promise<string> {
  * @returns {void}
  */
 export function CreateSession(sessionName: string, pseudo: string): void {
+  const { setCurrentSession, setCurrentParticipant } = useSession();
+
   /**
    * Crée une nouvelle session dans la base de données Supabase et y connecte le participant.
    * 
@@ -113,6 +116,10 @@ export function CreateSession(sessionName: string, pseudo: string): void {
         alert('Session créée mais échec de la connexion du participant.');
         return;
       }
+      
+      // Sauvegarder la session et le participant dans le contexte
+      setCurrentSession(createdSession);
+      setCurrentParticipant(connectedParticipant);
       
       alert(`Session créée avec succès !\n\nNom : ${createdSession.name}\nCode : ${createdSession.code}\nParticipant : ${connectedParticipant.name}`);
       

@@ -1,5 +1,10 @@
 import { supabase, type Session, type Participant } from '../lib/supabase';
 import { findParticipantByName } from './Login';
+import { useSession } from '../context/SessionContext';
+
+
+  // Récupérer les fonctions et données du contexte de session
+  const { setCurrentSession, setCurrentParticipant } = useSession();
 
 /**
  * Vérifie si une session existe avec le code fourni.
@@ -26,8 +31,6 @@ async function findSessionByCode(code: string): Promise<Session | null> {
   
   return data;
 }
-
-
 
 /**
  * Ajoute un participant à une session.
@@ -58,9 +61,12 @@ export async function addParticipantToSession(sessionId: string, participantId: 
  * 
  * @param {string} sessionCode - Le code de la session à rejoindre.
  * @param {string} pseudo - Le pseudo du participant.
+ * @param {Function} setCurrentSession - Fonction pour sauvegarder la session dans le contexte.
+ * @param {Function} setCurrentParticipant - Fonction pour sauvegarder le participant dans le contexte.
  * @returns {void}
  */
-export function JoinSession(sessionCode: string, pseudo: string): void {
+export function JoinSession(sessionCode: string, pseudo: string
+): void {
   /**
    * Gère le processus de connexion d'un participant à une session.
    * 
@@ -91,6 +97,10 @@ export function JoinSession(sessionCode: string, pseudo: string): void {
     const updatedParticipant: Participant | null = await addParticipantToSession(session.id, participant.id);
     
     if (updatedParticipant) {
+      // Sauvegarder la session et le participant dans le contexte
+      setCurrentSession(session);
+      setCurrentParticipant(updatedParticipant);
+      
       alert(`Vous avez rejoint la session : ${session.name} (Code: ${session.code})`);
     } else {
       alert('Échec de la connexion à la session.');

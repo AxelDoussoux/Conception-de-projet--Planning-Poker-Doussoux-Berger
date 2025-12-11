@@ -39,7 +39,7 @@ function App(): JSX.Element {
   const [sessionCode, setSessionCode] = useState<string>('');
 
   // Récupérer les fonctions et données du contexte de session
-  const { currentSession, setCurrentSession, setCurrentParticipant } = useSession();
+  const { currentParticipant,currentSession, setCurrentSession, setCurrentParticipant } = useSession();
 
   /**
    * Bascule l'état d'ouverture du menu.
@@ -163,6 +163,7 @@ function App(): JSX.Element {
               </div>
 
               {/* Créer une session */}
+              {currentParticipant && (
               <div className="p-4">
                 <div className="bg-white rounded-md p-4 space-y-3">
                   <div className="flex items-center gap-3">
@@ -176,13 +177,6 @@ function App(): JSX.Element {
                   </div>
                   <input
                     type="text"
-                    placeholder="Votre pseudo"
-                    value={pseudo}
-                    onChange={(e) => setPseudo(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                  />
-                  <input
-                    type="text"
                     placeholder="Nom de la session"
                     value={sessionName}
                     onChange={(e) => setSessionName(e.target.value)}
@@ -194,10 +188,13 @@ function App(): JSX.Element {
                   >
                     Créer
                   </button>
+
                 </div>
               </div>
+              )}
 
               {/* Rejoindre une session */}
+              {currentParticipant && (
               <div className="p-4">
                 <div className="bg-white rounded-md p-4 space-y-3">
                   <div className="flex items-center gap-3">
@@ -209,13 +206,6 @@ function App(): JSX.Element {
                       <div className="text-xs text-gray-500">Saisir un code de session</div>
                     </div>
                   </div>
-                  <input
-                    type="text"
-                    placeholder="Votre pseudo"
-                    value={pseudo}
-                    onChange={(e) => setPseudo(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
-                  />
                   <input
                     type="text"
                     placeholder="Code de session (6 chiffres)"
@@ -232,8 +222,10 @@ function App(): JSX.Element {
                   </button>
                 </div>
               </div>
+              )}
 
               {/* Désactiver une session */}
+              {currentSession && (
               <div className="p-4">
                 <button
                   onClick={handleDisableSession}
@@ -248,6 +240,7 @@ function App(): JSX.Element {
                   </div>
                 </button>
               </div>
+              )}
 
               <div className="p-3 bg-gray-100 text-center text-xs text-gray-500">
                 Astuce : utilisez le menu pour tester toutes les fonctionnalités.

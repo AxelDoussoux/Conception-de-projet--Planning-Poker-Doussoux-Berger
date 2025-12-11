@@ -1,10 +1,6 @@
-import { supabase, type Session, type Participant } from '../lib/supabase';
-import { findParticipantByName } from './Login';
-import { useSession } from '../context/SessionContext';
-
-
-  // Récupérer les fonctions et données du contexte de session
-  const { setCurrentSession, setCurrentParticipant } = useSession();
+import { supabase, type Session, type Participant } from '../lib/supabase.ts';
+import { findParticipantByName } from './Login.tsx';
+import { useSession } from '../context/SessionContext.tsx';
 
 /**
  * Vérifie si une session existe avec le code fourni.
@@ -65,8 +61,11 @@ export async function addParticipantToSession(sessionId: string, participantId: 
  * @param {Function} setCurrentParticipant - Fonction pour sauvegarder le participant dans le contexte.
  * @returns {void}
  */
-export function JoinSession(sessionCode: string, pseudo: string
-): void {
+export function JoinSession(sessionCode: string, pseudo: string): void {
+
+  // Récupérer les fonctions et données du contexte de session
+  const { setCurrentSession, setCurrentParticipant } = useSession();
+
   /**
    * Gère le processus de connexion d'un participant à une session.
    * 

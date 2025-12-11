@@ -67,6 +67,8 @@ async function generateUniqueCode(): Promise<string> {
  * @returns {void}
  */
 export function CreateSession(sessionName: string, pseudo: string): void {
+  
+  // Récupérer les fonctions et données du contexte de session
   const { setCurrentSession, setCurrentParticipant } = useSession();
 
   /**

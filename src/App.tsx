@@ -1,9 +1,9 @@
 import { useState, type JSX } from 'react';
-import { CreateSession } from './script/CreateSession';
-import { JoinSession } from './script/JoinSession';
-import { DisableSession } from './script/DisableSession';
-import { Login } from './script/Login';
-import { useSession } from './context/SessionContext';
+import { CreateSession } from './script/CreateSession.tsx';
+import { JoinSession } from './script/JoinSession.tsx';
+import { DisableSession } from './script/DisableSession.tsx';
+import { Login } from './script/Login.tsx';
+import { useSession } from './context/SessionContext.tsx';
 
 /**
  * Composant principal de l'application "Planning Poker".

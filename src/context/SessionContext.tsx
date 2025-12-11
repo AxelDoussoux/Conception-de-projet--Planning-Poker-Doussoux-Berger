@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import { type Session, type Participant } from '../lib/supabase';
+import { type Session, type Participant } from '../lib/supabase.ts';
 
 interface SessionContextType {
     currentSession: Session | null;
@@ -28,4 +28,3 @@ export function useSession() {
     }
     return context;
 }
-

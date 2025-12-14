@@ -1,6 +1,7 @@
 import { useState, type JSX } from "react"
 import { SlUser } from "react-icons/sl"
 import type { Task } from "./types/Task"
+import { useNavigate } from "react-router-dom"
 
 export default function CreateSession() {
     const [sessionName, setSessionName] = useState("")
@@ -24,11 +25,25 @@ export default function CreateSession() {
     const removeTask = (id: string) => {
         setTasks(prev => prev.filter(task => task.id !== id))
     }
+
+    const navigate = useNavigate()
+
+    const handleContinue = () => {
+        navigate("/game")
+    }
     
     return (
         <div className="min-h-screen bg-gray-50 flex justify-center p-6">
         <div className="w-full max-w-xl bg-white rounded-2xl shadow p-6 space-y-6">
-    
+        <div justify-content="center">
+        <h1 className="text-3xl font-extrabold text-gray-800" >
+            Planning Poker
+          </h1>
+          <p className="mt-2 text-sm text-gray-500">
+            Estimez les tâches en équipe rapidement
+          </p>
+        </div>
+        
             <h1 className="text-2xl font-bold text-gray-800">
             Préparer la session
             </h1>
@@ -84,6 +99,7 @@ export default function CreateSession() {
     
             {/* Action future */}
             <button
+            onClick={handleContinue}
             disabled={tasks.length === 0}
             className="w-full py-2 bg-green-600 text-white rounded-lg disabled:opacity-50"
             >

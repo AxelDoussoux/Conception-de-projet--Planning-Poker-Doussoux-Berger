@@ -3,11 +3,12 @@ import { SlUser } from "react-icons/sl"
 import type { Task } from "../Types/Task"
 import { useNavigate } from "react-router-dom"
 
-export default function CreateSession() {
+export function CreateSession() {
     const [sessionName, setSessionName] = useState("")
     const [taskTitle, setTaskTitle] = useState("")
     const [tasks, setTasks] = useState<Task[]>([])
     
+
     const addTask = () => {
         if (!taskTitle.trim()) return
     
@@ -29,6 +30,7 @@ export default function CreateSession() {
     const navigate = useNavigate()
 
     const handleContinue = () => {
+
         navigate("/game")
     }
     

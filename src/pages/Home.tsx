@@ -1,6 +1,7 @@
 import { useState, type JSX } from "react"
 import { SlUser } from "react-icons/sl"
 import { useNavigate } from "react-router-dom"
+import {CreateSession} from "./Session"
 
 /**
  * Page d'accueil de l'application Planning Poker
@@ -9,6 +10,7 @@ export default function Home(): JSX.Element {
   const [menuOpen, setMenuOpen] = useState<boolean>(false)
   const [showCreateForm, setShowCreateForm] = useState<boolean>(false)
   const [showJoinForm, setShowJoinForm] = useState<boolean>(false)
+  let newSession = false
 
   const toggleMenu = (): void => {
     setMenuOpen(open => !open)
@@ -25,10 +27,11 @@ export default function Home(): JSX.Element {
   const navigate = useNavigate()
 
   const handleContinue = () => {
-    navigate("/session")
+        newSession = true
   }
 
-  return (
+  
+    return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-start justify-center p-6">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl ring-1 ring-gray-100 overflow-hidden">
         <header className="p-6 text-center">
@@ -142,7 +145,13 @@ export default function Home(): JSX.Element {
             </div>
           </nav>
         )}
+
+        
       </div>
+      <CreateSession/>
     </div>
+    
+
   )
+ 
 }

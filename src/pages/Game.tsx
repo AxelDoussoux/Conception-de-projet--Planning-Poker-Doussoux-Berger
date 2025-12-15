@@ -1,6 +1,6 @@
 import { useState, type JSX } from "react"
-import { SlUser } from "react-icons/sl"
-import type { Task } from "./types/Task"
+//import { SlUser } from "react-icons/sl"
+import type { Task } from "../Types/Task"
 
 type CardValue =
   | 0 | 1 | 2 | 3 | 5 | 8 | 13 | 20 | 40
@@ -16,6 +16,9 @@ export default function Game() {
 
 
   return(
-    <p>hello World !</p>
+    <div>
+      <p>hello World !</p>
+      <h1>{currentTask.title}</h1>
+    </div>
   )
 }

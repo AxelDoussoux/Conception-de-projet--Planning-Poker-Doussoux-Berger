@@ -1,6 +1,6 @@
 import { useState, type JSX } from "react"
 import { SlUser } from "react-icons/sl"
-import type { Task } from "./types/Task"
+import type { Task } from "../Types/Task"
 import { useNavigate } from "react-router-dom"
 
 export default function CreateSession() {

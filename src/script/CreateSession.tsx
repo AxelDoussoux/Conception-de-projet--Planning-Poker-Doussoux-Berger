@@ -7,7 +7,7 @@ import { findParticipantByName } from './Login';
  * 
  * @returns {string} Un code numérique entre 100000 et 999999.
  */
-function generateCode(): string {
+export function generateCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
@@ -17,7 +17,7 @@ function generateCode(): string {
  * @param {string} code - Le code à vérifier.
  * @returns {Promise<boolean>} True si le code est unique, false sinon.
  */
-async function isCodeUnique(code: string): Promise<boolean> {
+export async function isCodeUnique(code: string): Promise<boolean> {
   const { data, error } = await supabase
     .from('sessions')
     .select('code')
@@ -39,7 +39,7 @@ async function isCodeUnique(code: string): Promise<boolean> {
  * @returns {Promise<string>} Un code unique à 6 chiffres.
  * @throws {Error} Si aucun code unique n'a pu être généré après 10 tentatives.
  */
-async function generateUniqueCode(): Promise<string> {
+export async function generateUniqueCode(): Promise<string> {
   let code: string = generateCode();
   let attempts: number = 0;
   const maxAttempts: number = 10;

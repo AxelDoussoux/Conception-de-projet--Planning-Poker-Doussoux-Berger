@@ -7,7 +7,7 @@ import { findParticipantByName } from './Login.tsx';
  * @param {string} code - Le code de la session à vérifier.
  * @returns {Promise<Session | null>} La session trouvée ou null si elle n'existe pas.
  */
-async function findSessionByCode(code: string): Promise<Session | null> {
+export async function findSessionByCode(code: string): Promise<Session | null> {
   const { data, error } = await supabase
     .from('sessions')
     .select('*')

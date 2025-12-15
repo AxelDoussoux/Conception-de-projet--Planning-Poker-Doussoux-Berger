@@ -6,7 +6,7 @@ import { supabase, type Session } from '../lib/supabase';
  * @param {string} sessionId - L'ID de la session à vérifier.
  * @returns {Promise<Session | null>} La session si elle existe et est active, null sinon.
  */
-async function findActiveSession(sessionId: string): Promise<Session | null> {
+export async function findActiveSession(sessionId: string): Promise<Session | null> {
   const { data, error } = await supabase
     .from('sessions')
     .select('*')
@@ -28,7 +28,7 @@ async function findActiveSession(sessionId: string): Promise<Session | null> {
  * @param {string} sessionId - L'ID de la session à désactiver.
  * @returns {Promise<Session | null>} La session mise à jour ou null en cas d'erreur.
  */
-async function deactivateSession(sessionId: string): Promise<Session | null> {
+export async function deactivateSession(sessionId: string): Promise<Session | null> {
   // Ne pas utiliser .select() car cela nécessite une policy SELECT
   const { error } = await supabase
     .from('sessions')
@@ -61,7 +61,7 @@ async function deactivateSession(sessionId: string): Promise<Session | null> {
  * @param {string} sessionId - L'ID de la session.
  * @returns {Promise<Array<{id: string, name: string}> | null>} La liste des participants ou null en cas d'erreur.
  */
-async function getSessionParticipants(sessionId: string): Promise<Array<{id: string, name: string}> | null> {
+export async function getSessionParticipants(sessionId: string): Promise<Array<{id: string, name: string}> | null> {
   const { data, error } = await supabase
     .from('participants')
     .select('id, name')
@@ -81,7 +81,7 @@ async function getSessionParticipants(sessionId: string): Promise<Array<{id: str
  * @param {string} sessionId - L'ID de la session.
  * @returns {Promise<boolean>} True si réussi, false sinon.
  */
-async function disconnectParticipants(sessionId: string): Promise<boolean> {
+export async function disconnectParticipants(sessionId: string): Promise<boolean> {
   const { error } = await supabase
     .from('participants')
     .update({ session_id: null })

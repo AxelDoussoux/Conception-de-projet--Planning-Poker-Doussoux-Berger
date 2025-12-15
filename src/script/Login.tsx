@@ -6,7 +6,7 @@ import { supabase, type Participant } from '../lib/supabase';
  * @param {string} pseudo - Le pseudo à vérifier.
  * @returns {Promise<boolean>} True si le pseudo existe déjà, false sinon.
  */
-async function isPseudoExists(pseudo: string): Promise<boolean> {
+export async function isPseudoExists(pseudo: string): Promise<boolean> {
   const { data, error } = await supabase
     .from('participants')
     .select('name')

@@ -20,3 +20,20 @@ export interface Participant {
   name: string;
   joined_at: string;
 }
+
+export interface Votes {
+  id: string;
+  task_id: string;
+  participant_id: string;
+  value: number;
+  voted_at: string;
+}
+
+export interface Tasks {
+  id: string;
+  session_id: string;
+  title: string;
+  description: string;
+  is_current: boolean;
+  created_at: string;
+}

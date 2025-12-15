@@ -35,14 +35,14 @@ export default function CreateSession() {
     return (
         <div className="min-h-screen bg-gray-50 flex justify-center p-6">
         <div className="w-full max-w-xl bg-white rounded-2xl shadow p-6 space-y-6">
-        <div justify-content="center">
-        <h1 className="text-3xl font-extrabold text-gray-800" >
-            Planning Poker
-          </h1>
-          <p className="mt-2 text-sm text-gray-500">
-            Estimez les tâches en équipe rapidement
-          </p>
-        </div>
+        <header className="p-6 text-center">
+            <h1 className="text-3xl font-extrabold text-gray-800 m-0 p-0">
+                Planning Poker
+            </h1>
+            <p className="text-sm text-gray-500 m-0 p-0">
+                Estimez les tâches en équipe rapidement
+            </p>
+        </header>
         
             <h1 className="text-2xl font-bold text-gray-800">
             Préparer la session

@@ -16,9 +16,21 @@ export default function Game() {
 
 
   return(
-    <div>
-      <p>hello World !</p>
-      <h1>{currentTask.title}</h1>
+    <div className="min-h-screen bg-gray-50 flex justify-center p-6">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl ring-1 ring-gray-100 overflow-hidden">
+        <header className="p-6 text-center">
+        <h1 className="text-3xl font-extrabold text-gray-800">
+            Planning Poker
+          </h1>
+          <p className="mt-2 text-sm text-gray-500">
+            Estimez les tâches en équipe rapidement
+          </p>
+        </header>
+        <div className="min-h-screen flex flex-col justify-between p-6">
+        <h1 className="text-2xl font-bold text-gray-800">{currentTask.title}</h1>
+        </div>
+
+      </div>
     </div>
   )
 }

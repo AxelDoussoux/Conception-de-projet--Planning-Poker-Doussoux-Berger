@@ -14,12 +14,7 @@ import { useSession } from './context/SessionContext.tsx';
  * @returns {JSX.Element} L'élément React rendu pour l'application.
  */
 function App(): JSX.Element {
-  /**
-   * Indique si le menu est ouvert.
-   * @type {boolean}
-   */
-  const [menuOpen, setMenuOpen] = useState<boolean>(false);
-
+  
   /**
    * Pseudo saisi par l'utilisateur.
    * @type {string}
@@ -40,14 +35,6 @@ function App(): JSX.Element {
 
   // Récupérer les fonctions et données du contexte de session
   const { currentParticipant,currentSession, setCurrentSession, setCurrentParticipant } = useSession();
-
-  /**
-   * Bascule l'état d'ouverture du menu.
-   * @returns {void}
-   */
-  const toggleMenu = (): void => {
-    setMenuOpen(open => !open);
-  };
 
   /**
    * Handler appelé lorsque l'utilisateur clique sur "Créer une session".
@@ -115,23 +102,11 @@ function App(): JSX.Element {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl ring-1 ring-gray-100 overflow-hidden">
         <header className="p-6 text-center">
           <h1 className="text-3xl font-extrabold text-gray-800">Planning Poker</h1>
-          <p className="mt-2 text-sm text-gray-500">Estimez les tâches en équipe rapidement</p>
+          <p className="mt-2 mb-4 text-sm text-gray-500">Estimez les tâches en équipe rapidement</p>
 
-          <div className="mt-5 flex justify-center">
-            <button
-              onClick={toggleMenu}
-              aria-expanded={menuOpen}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 transition"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-              Menu
-            </button>
-          </div>
-        </header>
+          
 
-        {menuOpen && (
+
           <nav className="px-6 pb-6" aria-label="Panneau de menu principal">
             <div className="bg-gray-50 border border-gray-100 rounded-lg shadow-inner divide-y divide-gray-100 overflow-hidden">
               
@@ -248,10 +223,9 @@ function App(): JSX.Element {
               </div>
             </div>
           </nav>
-        )}
+        </header>
       </div>
     </div>
-  );
-}
+)}
 
 export default App;

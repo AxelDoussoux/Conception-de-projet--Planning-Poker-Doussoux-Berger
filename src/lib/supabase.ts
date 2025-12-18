@@ -31,9 +31,9 @@ export interface Votes {
 
 export interface Tasks {
   id: string;
-  session_id: string;
+  session_id: string | null;
   title: string;
-  description: string;
-  is_current: boolean;
+  description: string | null;
+  is_current: boolean | null;
   created_at: string;
 }

@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { cards } from '../lib/planningPoker.ts';
-
 
 /**
  * Composant Planning Poker pour voter sur les estimations.
@@ -14,6 +12,9 @@ function PlanningPoker() {
      * @type {string}
      */
     const [voteCode, setVoteCode] = useState<string>('');
+
+
+    const cards: (number | string)[] = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, '?'];
 
     return (
     <div className="min-h-screen bg-gray-50 p-8">

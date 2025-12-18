@@ -4,6 +4,7 @@ import { JoinSession } from './script/JoinSession.tsx';
 import { DisableSession } from './script/DisableSession.tsx';
 import { Login } from './script/Login.tsx';
 import { useSession } from './context/SessionContext.tsx';
+import { fetchTasks, createTask, updateTask, deleteTask } from './script/Tasks.tsx';
 
 /**
  * Composant principal de l'application "Planning Poker".
@@ -97,6 +98,54 @@ function App(): JSX.Element {
     DisableSession(currentSession.id, setCurrentSession);
   };
 
+  // Handlers de test pour Tasks
+  const handleTestFetchTasks = async (): Promise<void> => {
+    if (!currentSession) return alert('Aucune session active.');
+    const tasks = await fetchTasks(currentSession.id);
+    alert(`Tâches trouvées : ${tasks.length}`);
+    console.log('fetchTasks result:', tasks);
+  };
+
+  const handleTestCreateTask = async (): Promise<void> => {
+    if (!currentSession) return alert('Aucune session active.');
+    const title = `Tâche test ${new Date().toLocaleTimeString()}`;
+    const t = await createTask(currentSession.id, title, 'Créée pour test');
+    if (t) {
+      alert('Tâche créée');
+      console.log('createTask result:', t);
+    } else {
+      alert('Erreur création tâche');
+    }
+  };
+
+  const handleTestUpdateTask = async (): Promise<void> => {
+    if (!currentSession) return alert('Aucune session active.');
+    const tasks = await fetchTasks(currentSession.id);
+    if (!tasks || tasks.length === 0) return alert('Aucune tâche à modifier.');
+    const first = tasks[0];
+    const updated = await updateTask(first.id, { title: first.title + ' (modifié)' });
+    if (updated) {
+      alert('Tâche modifiée');
+      console.log('updateTask result:', updated);
+    } else {
+      alert('Erreur modification tâche');
+    }
+  };
+
+  const handleTestDeleteTask = async (): Promise<void> => {
+    if (!currentSession) return alert('Aucune session active.');
+    const tasks = await fetchTasks(currentSession.id);
+    if (!tasks || tasks.length === 0) return alert('Aucune tâche à supprimer.');
+    const last = tasks[tasks.length - 1];
+    const ok = await deleteTask(last.id);
+    if (ok) {
+      alert('Tâche supprimée');
+      console.log('deleteTask deleted id:', last.id);
+    } else {
+      alert('Erreur suppression tâche');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-start justify-center p-6">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl ring-1 ring-gray-100 overflow-hidden">
@@ -104,9 +153,7 @@ function App(): JSX.Element {
           <h1 className="text-3xl font-extrabold text-gray-800">Planning Poker</h1>
           <p className="mt-2 mb-4 text-sm text-gray-500">Estimez les tâches en équipe rapidement</p>
 
-          
-
-
+          {/* menu / actions existants */}
           <nav className="px-6 pb-6" aria-label="Panneau de menu principal">
             <div className="bg-gray-50 border border-gray-100 rounded-lg shadow-inner divide-y divide-gray-100 overflow-hidden">
               
@@ -217,6 +264,19 @@ function App(): JSX.Element {
                 </button>
               </div>
               )}
+
+              {/* Section de test Tasks */}
+              <div className="p-4">
+                <div className="bg-white rounded-md p-4 space-y-3">
+                  <div className="text-sm font-medium text-gray-800">Tests Tasks (dev)</div>
+                  <div className="flex flex-col gap-2">
+                    <button onClick={handleTestFetchTasks} className="w-full px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm">Fetch tasks</button>
+                    <button onClick={handleTestCreateTask} className="w-full px-3 py-2 bg-green-100 rounded hover:bg-green-200 text-sm">Create test task</button>
+                    <button onClick={handleTestUpdateTask} className="w-full px-3 py-2 bg-yellow-100 rounded hover:bg-yellow-200 text-sm">Update first task</button>
+                    <button onClick={handleTestDeleteTask} className="w-full px-3 py-2 bg-red-100 rounded hover:bg-red-200 text-sm">Delete last task</button>
+                  </div>
+                </div>
+              </div>
 
               <div className="p-3 bg-gray-100 text-center text-xs text-gray-500">
                 Astuce : utilisez le menu pour tester toutes les fonctionnalités.

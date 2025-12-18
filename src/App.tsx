@@ -1,11 +1,9 @@
 import { useState, type JSX } from 'react';
-import { CreateSession } from './script/CreateSession.tsx';
-import { JoinSession } from './script/JoinSession.tsx';
-import { DisableSession } from './script/DisableSession.tsx';
-import { Login } from './script/Login.tsx';
 import { useSession } from './context/SessionContext.tsx';
-import { fetchTasks, createTask, updateTask, deleteTask } from './script/Tasks.tsx';
-import { fetchVotes, submitVote, resetVotes, deleteVote } from './script/Votes.tsx';
+import { createSession, joinSession, disableSession } from './services/sessions';
+import { createParticipant } from './services/participants';
+import { fetchTasks, createTask, updateTask, deleteTask } from './services/tasks';
+import { fetchVotes, submitVote, resetVotes, deleteVote } from './services/votes';
 
 /**
  * Composant principal de l'application "Planning Poker".
@@ -52,7 +50,7 @@ function App(): JSX.Element {
       alert('Veuillez saisir un nom de session.');
       return;
     }
-    CreateSession(sessionName, pseudo, setCurrentSession, setCurrentParticipant);
+    void createSession(sessionName, pseudo, setCurrentSession, setCurrentParticipant);
   };
 
   /**
@@ -69,7 +67,7 @@ function App(): JSX.Element {
       alert('Veuillez saisir le code de session.');
       return;
     }
-    JoinSession(sessionCode, pseudo, setCurrentSession, setCurrentParticipant);
+    void joinSession(sessionCode, pseudo, setCurrentSession, setCurrentParticipant);
   };
 
   /**
@@ -82,7 +80,13 @@ function App(): JSX.Element {
       alert('Veuillez saisir votre pseudo.');
       return;
     }
-    Login(pseudo, setCurrentParticipant);
+    // createParticipant returns the created participant; set it in context
+    createParticipant(pseudo).then((participant) => {
+      if (participant) {
+        setCurrentParticipant(participant);
+        alert(`Participant connecté : Pseudo = ${participant.name}`);
+      }
+    });
   };
 
   /**
@@ -96,7 +100,7 @@ function App(): JSX.Element {
       return;
     }
     console.log('Désactivation de la session avec ID :', currentSession.id);
-    DisableSession(currentSession.id, setCurrentSession);
+    void disableSession(currentSession.id, setCurrentSession);
   };
 
   // Handlers de test pour Tasks

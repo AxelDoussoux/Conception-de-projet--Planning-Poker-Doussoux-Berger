@@ -5,7 +5,7 @@ export async function fetchVotes(taskId: string): Promise<Votes[]> {
         .from('votes')
         .select('*')
         .eq('task_id', taskId)
-        .order('voted_at', { ascending: true }); // On trie par ordre chronologique
+        .order('voted_at', { ascending: true });
 
     if (error) {
         console.error('Erreur fetchVotes:', error);
@@ -15,7 +15,6 @@ export async function fetchVotes(taskId: string): Promise<Votes[]> {
 }
 
 export async function submitVote(taskId: string, participantId: string, value: number): Promise<Votes | null> {
-    // Vérifier si un vote existe déjà pour ce participant sur cette tâche
     const { data: existingVote } = await supabase
         .from('votes')
         .select('id')
@@ -24,10 +23,9 @@ export async function submitVote(taskId: string, participantId: string, value: n
         .maybeSingle();
 
     if (existingVote) {
-        // Mise à jour du vote existant
         const { data, error } = await supabase
             .from('votes')
-            .update({ value, voted_at: new Date().toISOString() }) // On met à jour la date aussi
+            .update({ value, voted_at: new Date().toISOString() })
             .eq('id', existingVote.id)
             .select()
             .single();
@@ -38,7 +36,6 @@ export async function submitVote(taskId: string, participantId: string, value: n
         }
         return data as Votes;
     } else {
-        // Création d'un nouveau vote
         const { data, error } = await supabase
             .from('votes')
             .insert([{ task_id: taskId, participant_id: participantId, value }])

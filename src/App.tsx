@@ -5,6 +5,7 @@ import { DisableSession } from './script/DisableSession.tsx';
 import { Login } from './script/Login.tsx';
 import { useSession } from './context/SessionContext.tsx';
 import { fetchTasks, createTask, updateTask, deleteTask } from './script/Tasks.tsx';
+import { fetchVotes, submitVote, resetVotes, deleteVote } from './script/Votes.tsx';
 
 /**
  * Composant principal de l'application "Planning Poker".
@@ -15,7 +16,7 @@ import { fetchTasks, createTask, updateTask, deleteTask } from './script/Tasks.t
  * @returns {JSX.Element} L'élément React rendu pour l'application.
  */
 function App(): JSX.Element {
-  
+
   /**
    * Pseudo saisi par l'utilisateur.
    * @type {string}
@@ -35,7 +36,7 @@ function App(): JSX.Element {
   const [sessionCode, setSessionCode] = useState<string>('');
 
   // Récupérer les fonctions et données du contexte de session
-  const { currentParticipant,currentSession, setCurrentSession, setCurrentParticipant } = useSession();
+  const { currentParticipant, currentSession, setCurrentSession, setCurrentParticipant } = useSession();
 
   /**
    * Handler appelé lorsque l'utilisateur clique sur "Créer une session".
@@ -146,6 +147,60 @@ function App(): JSX.Element {
     }
   };
 
+  // Handlers de test pour Votes
+  const handleTestFetchVotes = async (): Promise<void> => {
+    if (!currentSession) return alert('Aucune session active.');
+    const tasks = await fetchTasks(currentSession.id);
+    if (!tasks || tasks.length === 0) return alert('Aucune tâche disponible pour voir les votes.');
+    const firstTask = tasks[0];
+    const votes = await fetchVotes(firstTask.id);
+    alert(`Votes trouvés pour '${firstTask.title}' : ${votes.length}`);
+    console.log('fetchVotes result:', votes);
+  };
+
+  const handleTestSubmitVote = async (): Promise<void> => {
+    if (!currentSession) return alert('Aucune session active.');
+    if (!currentParticipant) return alert('Veuillez vous connecter.');
+    const tasks = await fetchTasks(currentSession.id);
+    if (!tasks || tasks.length === 0) return alert('Aucune tâche disponible pour voter.');
+    const firstTask = tasks[0];
+    const value = 13; // Valeur aléatoire pour le test
+    const v = await submitVote(firstTask.id, currentParticipant.id, value);
+    if (v) {
+      alert(`Vote de ${value} soumis pour '${firstTask.title}'`);
+      console.log('submitVote result:', v);
+    } else {
+      alert('Erreur soumission vote');
+    }
+  };
+
+  const handleTestResetVotes = async (): Promise<void> => {
+    if (!currentSession) return alert('Aucune session active.');
+    const tasks = await fetchTasks(currentSession.id);
+    if (!tasks || tasks.length === 0) return alert('Aucune tâche disponible.');
+    const firstTask = tasks[0];
+    const ok = await resetVotes(firstTask.id);
+    if (ok) {
+      alert(`Votes réinitialisés pour '${firstTask.title}'`);
+    } else {
+      alert('Erreur réinitialisation votes');
+    }
+  };
+
+  const handleTestDeleteVote = async (): Promise<void> => {
+    if (!currentSession) return alert('Aucune session active.');
+    if (!currentParticipant) return alert('Veuillez vous connecter.');
+    const tasks = await fetchTasks(currentSession.id);
+    if (!tasks || tasks.length === 0) return alert('Aucune tâche disponible.');
+    const firstTask = tasks[0];
+    const ok = await deleteVote(firstTask.id, currentParticipant.id);
+    if (ok) {
+      alert(`Votre vote a été supprimé pour '${firstTask.title}'`);
+    } else {
+      alert('Erreur suppression vote');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-start justify-center p-6">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl ring-1 ring-gray-100 overflow-hidden">
@@ -156,7 +211,7 @@ function App(): JSX.Element {
           {/* menu / actions existants */}
           <nav className="px-6 pb-6" aria-label="Panneau de menu principal">
             <div className="bg-gray-50 border border-gray-100 rounded-lg shadow-inner divide-y divide-gray-100 overflow-hidden">
-              
+
               {/* Se connecter */}
               <div className="p-4">
                 <div className="bg-white rounded-md p-4 space-y-3">
@@ -187,82 +242,82 @@ function App(): JSX.Element {
 
               {/* Créer une session */}
               {currentParticipant && (
-              <div className="p-4">
-                <div className="bg-white rounded-md p-4 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-800">Créer une session</div>
-                      <div className="text-xs text-gray-500">Démarrer une nouvelle réunion</div>
+                <div className="p-4">
+                  <div className="bg-white rounded-md p-4 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-gray-800">Créer une session</div>
+                        <div className="text-xs text-gray-500">Démarrer une nouvelle réunion</div>
+                      </div>
                     </div>
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Nom de la session"
-                    value={sessionName}
-                    onChange={(e) => setSessionName(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                  />
-                  <button
-                    onClick={handleCreateSession}
-                    className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition text-sm font-medium"
-                  >
-                    Créer
-                  </button>
+                    <input
+                      type="text"
+                      placeholder="Nom de la session"
+                      value={sessionName}
+                      onChange={(e) => setSessionName(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    />
+                    <button
+                      onClick={handleCreateSession}
+                      className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition text-sm font-medium"
+                    >
+                      Créer
+                    </button>
 
+                  </div>
                 </div>
-              </div>
               )}
 
               {/* Rejoindre une session */}
               {currentParticipant && (
-              <div className="p-4">
-                <div className="bg-white rounded-md p-4 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-800">Rejoindre une session</div>
-                      <div className="text-xs text-gray-500">Saisir un code de session</div>
+                <div className="p-4">
+                  <div className="bg-white rounded-md p-4 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-gray-800">Rejoindre une session</div>
+                        <div className="text-xs text-gray-500">Saisir un code de session</div>
+                      </div>
                     </div>
+                    <input
+                      type="text"
+                      placeholder="Code de session (6 chiffres)"
+                      value={sessionCode}
+                      onChange={(e) => setSessionCode(e.target.value)}
+                      maxLength={6}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+                    />
+                    <button
+                      onClick={handleJoinSession}
+                      className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition text-sm font-medium"
+                    >
+                      Rejoindre
+                    </button>
                   </div>
-                  <input
-                    type="text"
-                    placeholder="Code de session (6 chiffres)"
-                    value={sessionCode}
-                    onChange={(e) => setSessionCode(e.target.value)}
-                    maxLength={6}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
-                  />
-                  <button
-                    onClick={handleJoinSession}
-                    className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition text-sm font-medium"
-                  >
-                    Rejoindre
-                  </button>
                 </div>
-              </div>
               )}
 
               {/* Désactiver une session */}
               {currentSession && (
-              <div className="p-4">
-                <button
-                  onClick={handleDisableSession}
-                  className="w-full flex items-center gap-3 px-4 py-3 bg-white rounded-md hover:bg-gray-50 transition text-left"
-                >
-                  <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  <div>
-                    <div className="text-sm font-medium text-gray-800">Désactiver une session</div>
-                    <div className="text-xs text-gray-500">Terminer la session en cours</div>
-                  </div>
-                </button>
-              </div>
+                <div className="p-4">
+                  <button
+                    onClick={handleDisableSession}
+                    className="w-full flex items-center gap-3 px-4 py-3 bg-white rounded-md hover:bg-gray-50 transition text-left"
+                  >
+                    <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <div>
+                      <div className="text-sm font-medium text-gray-800">Désactiver une session</div>
+                      <div className="text-xs text-gray-500">Terminer la session en cours</div>
+                    </div>
+                  </button>
+                </div>
               )}
 
               {/* Section de test Tasks */}
@@ -278,14 +333,28 @@ function App(): JSX.Element {
                 </div>
               </div>
 
+              {/* Section de test Votes */}
+              <div className="p-4">
+                <div className="bg-white rounded-md p-4 space-y-3">
+                  <div className="text-sm font-medium text-gray-800">Tests Votes (dev)</div>
+                  <div className="flex flex-col gap-2">
+                    <button onClick={handleTestFetchVotes} className="w-full px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm">Fetch votes (1st task)</button>
+                    <button onClick={handleTestSubmitVote} className="w-full px-3 py-2 bg-indigo-100 rounded hover:bg-indigo-200 text-sm">Submit random vote (1st task)</button>
+                    <button onClick={handleTestDeleteVote} className="w-full px-3 py-2 bg-pink-100 rounded hover:bg-pink-200 text-sm">Delete my vote (1st task)</button>
+                    <button onClick={handleTestResetVotes} className="w-full px-3 py-2 bg-red-100 rounded hover:bg-red-200 text-sm">Reset all votes (1st task)</button>
+                  </div>
+                </div>
+              </div>
+
               <div className="p-3 bg-gray-100 text-center text-xs text-gray-500">
-                Astuce : utilisez le menu pour tester toutes les fonctionnalités.
+                Tests (dev)
               </div>
             </div>
           </nav>
         </header>
       </div>
     </div>
-)}
+  )
+}
 
 export default App;

@@ -1,7 +1,7 @@
 import { useState, type JSX } from "react"
 import { useSession } from "../context/SessionContext"
 import { findParticipantByName, createParticipant } from "../services/participants"
-import { createSession, joinSession } from "../services/sessions"
+import { joinSession } from "../services/sessions"
 
 /**
  * Bloc Home : Login puis Créer/Rejoindre session
@@ -9,7 +9,6 @@ import { createSession, joinSession } from "../services/sessions"
 export function HomeBlock({ onOpenSession, onOpenGame }: { onOpenSession: () => void; onOpenGame: () => void }): JSX.Element {
   const [pseudo, setPseudo] = useState("")
   const [loggedIn, setLoggedIn] = useState(false)
-  const [sessionName, setSessionName] = useState("")
   const [sessionCode, setSessionCode] = useState("")
 
   const { setCurrentSession, setCurrentParticipant, currentParticipant } = useSession()
@@ -24,13 +23,6 @@ export function HomeBlock({ onOpenSession, onOpenGame }: { onOpenSession: () => 
     if (!participant) return alert("Impossible de valider le pseudo.")
     setCurrentParticipant(participant)
     setLoggedIn(true)
-  }
-
-  // Créer une session
-  const handleCreate = async () => {
-    if (!sessionName.trim()) return alert("Entrez un nom de session")
-    await createSession(sessionName.trim(), pseudo.trim(), "strict", setCurrentSession, setCurrentParticipant)
-    onOpenSession()
   }
 
   // Rejoindre une session
@@ -61,17 +53,7 @@ export function HomeBlock({ onOpenSession, onOpenGame }: { onOpenSession: () => 
           <p className="text-lg text-gray-700">Bonjour <span className="font-bold text-indigo-600">{currentParticipant?.name ?? pseudo}</span> !</p>
 
           {/* Créer session */}
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-gray-700">Créer une session</label>
-            <input
-              value={sessionName}
-              onChange={e => setSessionName(e.target.value)}
-              type="text"
-              placeholder="Nom de la session..."
-              className="w-full px-3 py-2 border rounded-lg"
-            />
-            <button onClick={handleCreate} className="w-full px-4 py-2 bg-green-600 text-white rounded-lg">Créer</button>
-          </div>
+          <button onClick={onOpenSession} className="w-full px-4 py-2 bg-green-600 text-white rounded-lg">Créer une session</button>
 
           {/* Rejoindre session */}
           <div className="flex flex-col gap-2">

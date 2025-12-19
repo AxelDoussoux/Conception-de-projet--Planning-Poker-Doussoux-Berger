@@ -3,6 +3,7 @@ import { useSession } from "../context/SessionContext"
 import { fetchTasks, subscribeToTasks } from "../services/tasks"
 import { fetchVotes, submitVote } from "../services/votes"
 import { getSessionParticipants, deactivateSession } from "../services/sessions"
+import { deleteParticipant } from "../services/participants"
 import type { Tasks } from "../lib/supabase"
 import type { Votes } from "../lib/supabase"
 
@@ -42,6 +43,15 @@ export function GameBlock({ onOpenHome }: { onOpenHome: () => void }) {
 
   // sélection de la tâche en cours dans la liste tasks
   const currentTask = tasks[currentTaskIndex] ?? null;
+
+  // Déconnexion du participant
+  const handleDisconnect = async () => {
+    if (!currentParticipant) return;
+    await deleteParticipant(currentParticipant.id);
+    setCurrentSession(null);
+    setCurrentParticipant(null);
+    onOpenHome();
+  };
 
   useEffect(() => {
     if (!currentSession) return;
@@ -163,6 +173,9 @@ const handleValidateVote = async () => {
       setTimeout(async () => {
         // Fermer la session après 20 secondes
         await deactivateSession(currentSession.id);
+        if (currentParticipant) {
+          await deleteParticipant(currentParticipant.id);
+        }
         setShowFinalResults(false);
         setSessionEnded(true);
         setCurrentSession(null);
@@ -218,7 +231,15 @@ return (
         {/* Nombre de participants et votes */}
         <div className="flex justify-between mb-4">
           <span className="text-sm text-gray-500">{participantCount} participant{participantCount > 1 ? 's' : ''} connecté{participantCount > 1 ? 's' : ''}</span>
-          <span className="text-sm text-gray-500">{voteCount}/{participantCount} vote{voteCount > 1 ? 's' : ''}</span>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-500">{voteCount}/{participantCount} vote{voteCount > 1 ? 's' : ''}</span>
+            <button
+              onClick={handleDisconnect}
+              className="text-sm text-red-500 hover:text-red-700"
+            >
+              Se déconnecter
+            </button>
+          </div>
         </div>
 
     {showResults ? (

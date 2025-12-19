@@ -28,7 +28,7 @@ export default function App() {
 
       <main className="max-w-4xl mx-auto p-6 flex flex-col gap-6">
         {showHome && <HomeBlock onOpenSession={openSession} onOpenGame={openGame} />}
-        {showSession && <SessionBlock onOpenGame={openGame} />}
+        {showSession && <SessionBlock onOpenGame={openGame} onOpenHome={openHome} />}
         {showGame && <GameBlock onOpenHome={openHome} />}
       </main>
     </div>

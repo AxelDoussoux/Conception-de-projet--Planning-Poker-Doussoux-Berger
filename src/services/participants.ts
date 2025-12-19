@@ -53,3 +53,33 @@ export async function createParticipant(pseudo: string): Promise<Participant | n
 
   return data;
 }
+
+export async function disconnectParticipant(participantId: string): Promise<Participant | null> {
+  const { data, error } = await supabase
+    .from('participants')
+    .update({ session_id: null })
+    .eq('id', participantId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Erreur lors de la déconnexion du participant :', error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function deleteParticipant(participantId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('participants')
+    .delete()
+    .eq('id', participantId);
+
+  if (error) {
+    console.error('Erreur lors de la suppression du participant :', error);
+    return false;
+  }
+
+  return true;
+}

@@ -4,15 +4,23 @@ import type { GameMode } from "../lib/types"
 import { useSession } from "../context/SessionContext"
 import { createSession } from "../services/sessions"
 import { createTask } from "../services/tasks"
+import { deleteParticipant } from "../services/participants"
 
-
-export function SessionBlock({ onOpenGame }: { onOpenGame: () => void }): JSX.Element {
+export function SessionBlock({ onOpenGame, onOpenHome }: { onOpenGame: () => void; onOpenHome: () => void }): JSX.Element {
     const [sessionName, setSessionName] = useState("")
     const [taskTitle, setTaskTitle] = useState("")
     const [tasks, setTasks] = useState<Tasks[]>([])
     const [gameMode, setGameMode] = useState<GameMode>("strict");
 
     const { currentParticipant, setCurrentSession, setCurrentParticipant } = useSession()
+
+    const handleBack = async () => {
+        if (currentParticipant) {
+            await deleteParticipant(currentParticipant.id);
+            setCurrentParticipant(null);
+        }
+        onOpenHome();
+    };
 
     const addTask = () => {
         if (!taskTitle.trim()) return
@@ -54,7 +62,15 @@ export function SessionBlock({ onOpenGame }: { onOpenGame: () => void }): JSX.El
     
     return (
         <div className="bg-white rounded-2xl shadow-xl ring-1 ring-gray-100 p-6 w-auto">
-            <h2 className="text-xl font-bold text-gray-800 mb-6">Créer la session</h2>
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-gray-800">Créer la session</h2>
+                <button
+                    onClick={handleBack}
+                    className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                    ← Retour
+                </button>
+            </div>
     
             {/* Nom de la session */}
             <div className="flex flex-col gap-2 mb-4">

@@ -11,6 +11,7 @@ export interface Session {
   code: string;
   name: string;
   is_active: boolean;
+  gamemode: string;
   created_at: string;
 }
 

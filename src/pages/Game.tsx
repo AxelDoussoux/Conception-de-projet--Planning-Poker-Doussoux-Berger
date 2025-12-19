@@ -2,58 +2,71 @@ import { useState, type JSX } from "react"
 //import { SlUser } from "react-icons/sl"
 import type { Task } from "../Types/Task"
 
+// valeurs possibles d'une cartes de planning poker 
 type CardValue =
   | 0 | 1 | 2 | 3 | 5 | 8 | 13 | 20 | 40
   | "cafe" | "interro"
 
-export default function Game() {
-  // Tâche en cours 
-  const [currentTask] = useState<Task>({
-    id: "1",
-    sessionId: "session-1",
-    title: "Créer la page Planning Poker"
-  })
 
-  //carte sélectionné par l'utilisateur
+export default function Game() {
+
+  // carte sélectionné par l'utilisateur pour la tâche active
+  const [currentTaskIndex, setCurrentTaskIndex] = useState(0)
+  // variable booleenne : si vrai, on affige la vue résultats
+  const [showResults, setShowResults] = useState(false)
+  // vote de l'utilisateur
+  const [votes, setVotes] = useState<{ userId: string; value: CardValue | null }[]>([])
+  // carte sélectionnée par l'utilisateur
   const [selectedCard, setSelectedCard] = useState<CardValue | null>(null)
 
-  // vote du joueur (pour l'instant c'est un mock)
-    const [votes, setVotes] = useState<
-      { userId: string; value: CardValue | null }[]
-  >([])
+  // listes des tâches à évaluer (mocking)
+  const tasks = [
+    { id: "1", title: "Créer la page Planning Poker" },
+    { id: "2", title: "Ecrire le rapport" },
+    // autres tâches...
+  ]
 
+
+  // sélection de la tâche en cours dans la liste tasks
+  const currentTask = tasks[currentTaskIndex]
+
+// gère la sélection des cartes avant la validation
 const handleSelectCard = (value: CardValue) => {
   //console.log("Carte sélectionnée :", value)
   setSelectedCard(value)
   //console.log("selectedCard =", selectedCard)
 
-  // plus tard envoyer au backend
-  setVotes(prev => [
-    ...prev,
-    { userId: "1", value: selectedCard }
-  ])
 }
 
+// retourne le nom du fichier correspondant à la CardValue 
 const getCardImage = (card: CardValue | null) => {
   return typeof card === "number"
     ? `/cards/cartes_${card}.svg`
     : `/cards/cartes_${card}.svg`
 }
 
-const [showResults, setShowResults] = useState(false);
-const [allVoted, setAllVoted] = useState(false);
-
+// fonction de validation du vote pour la tâche en cours
 const handleValidateVote = () => {
   if (selectedCard === null) return;
 
+  // votes simulés pour tester l'affichage
   const simulatedVotes: { userId: string; value: CardValue | null }[] = [
     { userId: "Valentin", value: 5 as CardValue },
     { userId: "Axel", value: "coffee" as CardValue },
     { userId: "moi", value: selectedCard }
   ];
 
+  //enregistre le vote et affiche les resultats
   setVotes(simulatedVotes);
   setShowResults(true);
+  // passer au vote de la tâche suivante au bout de 5 secondes
+  setTimeout(() => {
+    setShowResults(false)
+    setSelectedCard(null)
+    setVotes([])
+    setCurrentTaskIndex((prev) => (prev + 1 < tasks.length ? prev + 1 : prev))
+  }, 5000) 
+
 };
 
 

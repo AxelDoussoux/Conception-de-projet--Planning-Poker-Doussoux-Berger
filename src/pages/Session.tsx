@@ -3,6 +3,7 @@ import type { Tasks } from "../lib/supabase"
 import type { GameMode } from "../lib/types"
 import { useSession } from "../context/SessionContext"
 import { createSession } from "../services/sessions"
+import { createTask } from "../services/tasks"
 
 
 export function SessionBlock({ onOpenGame }: { onOpenGame: () => void }): JSX.Element {
@@ -38,7 +39,16 @@ export function SessionBlock({ onOpenGame }: { onOpenGame: () => void }): JSX.El
     const handleContinue = async () => {
         if (!currentParticipant) return alert('Vous devez d\'abord vous connecter depuis Home');
         if (!sessionName.trim()) return alert('Entrez un nom de session');
-        await createSession(sessionName, currentParticipant.name, gameMode, setCurrentSession, setCurrentParticipant);
+        if (tasks.length === 0) return alert('Ajoutez au moins une tâche');
+        
+        const session = await createSession(sessionName, currentParticipant.name, gameMode, setCurrentSession, setCurrentParticipant);
+        if (!session) return;
+        
+        // Créer les tâches dans la base de données
+        for (const task of tasks) {
+            await createTask(session.id, task.title, task.description || undefined);
+        }
+        
         onOpenGame()
     }
     

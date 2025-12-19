@@ -103,43 +103,42 @@ const getCardImage = (card: CardValue | null) => `/cards/cartes_${card}.svg`
 
 // fonction de validation du vote pour la tâche en cours
 const handleValidateVote = async () => {
-  if (selectedCard === null || !currentTask) return;
+  if (selectedCard === null || !currentTask || !currentParticipant) return;
 
-  // si vote numérique, on envoie au back
-  if (typeof selectedCard === 'number' && currentParticipant) {
-    await submitVote(currentTask.id, currentParticipant.id, selectedCard as number).catch(err => console.error(err))
+  // Envoyer le vote au backend (uniquement si numérique)
+  if (typeof selectedCard === 'number') {
+    await submitVote(currentTask.id, currentParticipant.id, selectedCard).catch(err => console.error(err))
   }
 
-  // récupérer les votes pour la tâche (affichage)
-    if (currentTask) {
-      const fetchedVotes: Votes[] = await fetchVotes(currentTask.id).catch(() => [])
+  // Récupérer les votes pour la tâche (affichage)
+  const fetchedVotes: Votes[] = await fetchVotes(currentTask.id).catch(() => [])
 
-      // récupère les participants de la session pour résoudre les ids en noms
-      let participantsMap: Record<string, string> = {}
-      if (currentSession) {
-        const parts = await getSessionParticipants(currentSession.id).catch(() => null)
-        if (parts && Array.isArray(parts)) {
-          participantsMap = parts.reduce((acc, p) => { acc[p.id] = p.name; return acc }, {} as Record<string,string>)
-        }
-      }
-
-      const mapped = fetchedVotes.map(v => ({ userId: participantsMap[v.participant_id] ?? v.participant_id, value: (v.value as CardValue) }))
-      // ajouter le vote local si non numérique
-      if (typeof selectedCard !== 'number' && currentParticipant) {
-        mapped.push({ userId: participantsMap[currentParticipant.id] ?? currentParticipant.id, value: selectedCard })
-      }
-      setVotes(mapped)
+  // Récupère les participants de la session pour résoudre les ids en noms
+  let participantsMap: Record<string, string> = {}
+  if (currentSession) {
+    const parts = await getSessionParticipants(currentSession.id).catch(() => null)
+    if (parts && Array.isArray(parts)) {
+      participantsMap = parts.reduce((acc, p) => { acc[p.id] = p.name; return acc }, {} as Record<string, string>)
     }
+  }
 
+  const mapped = fetchedVotes.map(v => ({ userId: participantsMap[v.participant_id] ?? v.participant_id, value: (v.value as CardValue) }))
+  
+  // Ajouter le vote local si non numérique (car non envoyé au backend)
+  if (typeof selectedCard !== 'number') {
+    mapped.push({ userId: participantsMap[currentParticipant.id] ?? currentParticipant.name, value: selectedCard })
+  }
+  
+  setVotes(mapped)
   setShowResults(true)
-  // passer au vote de la tâche suivante au bout de 5 secondes
+
+  // Passer au vote de la tâche suivante au bout de 5 secondes
   setTimeout(() => {
     setShowResults(false)
     setSelectedCard(null)
     setVotes([])
     setCurrentTaskIndex((prev) => (prev + 1 < tasks.length ? prev + 1 : prev))
   }, 5000)
-
 };
 
 

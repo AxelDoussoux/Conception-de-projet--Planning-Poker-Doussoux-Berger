@@ -68,16 +68,16 @@ export async function addParticipantToSession(sessionId: string, participantId: 
   return data;
 }
 
-export async function createSession(sessionName: string, pseudo: string, gameMode: string, setCurrentSession: (s: Session | null) => void, setCurrentParticipant: (p: Participant | null) => void): Promise<void> {
+export async function createSession(sessionName: string, pseudo: string, gameMode: string, setCurrentSession: (s: Session | null) => void, setCurrentParticipant: (p: Participant | null) => void): Promise<Session | null> {
   try {
     const participant: Participant | null = await findParticipantByName(pseudo.trim());
     if (!participant) {
       alert('Participant introuvable. Veuillez d\'abord vous connecter.');
-      return;
+      return null;
     }
     if (participant.session_id) {
       alert('Vous êtes déjà connecté à une session.');
-      return;
+      return null;
     }
     const uniqueCode = await generateUniqueCode();
     const { data: session, error } = await supabase
@@ -89,22 +89,24 @@ export async function createSession(sessionName: string, pseudo: string, gameMod
     if (error || !session) {
       console.error('Erreur lors de la création de la session :', error);
       alert('Échec de la création de la session.');
-      return;
+      return null;
     }
 
     const createdSession: Session = session as Session;
     const connectedParticipant: Participant | null = await addParticipantToSession(createdSession.id, participant.id);
     if (!connectedParticipant) {
       alert('Session créée mais échec de la connexion du participant.');
-      return;
+      return null;
     }
 
     setCurrentSession(createdSession);
     setCurrentParticipant(connectedParticipant);
     alert(`Session créée avec succès !\n\nNom : ${createdSession.name}\nCode : ${createdSession.code}\nParticipant : ${connectedParticipant.name}\nMode de jeu : ${createdSession.gamemode}`);
+    return createdSession;
   } catch (error) {
     console.error('Erreur lors de la création de la session :', error);
     alert('Échec de la création de la session.');
+    return null;
   }
 }
 

@@ -76,3 +76,24 @@ export async function deleteVote(taskId: string, participantId: string): Promise
     }
     return true;
 }
+
+export function subscribeToVotes(taskId: string, cb: (votes: Votes[]) => void): () => Promise<void> {
+    const channel = supabase
+        .channel(`votes:task:${taskId}`)
+        .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'votes', filter: `task_id=eq.${taskId}` },
+            () => {
+                void fetchVotes(taskId).then(cb).catch((err) => console.error('Error fetching votes on subscription:', err));
+            }
+        )
+        .subscribe();
+
+    return async () => {
+        try {
+            await supabase.removeChannel(channel);
+        } catch (err) {
+            console.error('Error unsubscribing votes channel:', err);
+        }
+    };
+}

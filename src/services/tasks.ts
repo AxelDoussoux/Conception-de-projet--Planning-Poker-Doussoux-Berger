@@ -73,3 +73,24 @@ export async function setCurrentTask(sessionId: string, taskId: string | null): 
     }
     return true;
 }
+
+export function subscribeToTasks(sessionId: string, cb: (tasks: Tasks[]) => void): () => Promise<void> {
+    const channel = supabase
+        .channel(`tasks:session:${sessionId}`)
+        .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'tasks', filter: `session_id=eq.${sessionId}` },
+            () => {
+                void fetchTasks(sessionId).then(cb).catch((err) => console.error('Error fetching tasks on subscription:', err));
+            }
+        )
+        .subscribe();
+
+    return async () => {
+        try {
+            await supabase.removeChannel(channel);
+        } catch (err) {
+            console.error('Error unsubscribing tasks channel:', err);
+        }
+    };
+}

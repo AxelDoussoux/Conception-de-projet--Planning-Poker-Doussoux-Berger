@@ -195,7 +195,7 @@ return (
     {sessionEnded ? (
       // --- Session terminée ---
       <div className="flex flex-col gap-4 items-center py-8">
-        <h2 className="text-2xl font-bold text-green-600">🎉 Session terminée !</h2>
+        <h2 className="text-2xl font-bold text-green-600">Session terminée !</h2>
         <p className="text-gray-600">Toutes les tâches ont été estimées.</p>
         <p className="text-sm text-gray-500">Merci pour votre participation !</p>
         <button
@@ -208,7 +208,7 @@ return (
     ) : showFinalResults ? (
       // --- Récapitulatif final (20 secondes) ---
       <div className="flex flex-col gap-6">
-        <h2 className="text-2xl font-bold text-gray-800 text-center">📊 Récapitulatif des votes</h2>
+        <h2 className="text-2xl font-bold text-gray-800 text-center">Récapitulatif des votes</h2>
         <p className="text-sm text-gray-500 text-center">La session se fermera automatiquement dans quelques secondes...</p>
         <div className="space-y-6 max-h-96 overflow-y-auto">
           {voteHistory.map((task, idx) => (

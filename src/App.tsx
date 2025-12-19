@@ -16,13 +16,8 @@ export default function App() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       {/* Header + Navbar */}
       <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-extrabold text-indigo-600">Planning Poker</h1>
-          <nav className="flex gap-2">
-            <button onClick={openHome} className={`px-3 py-1 rounded ${showHome?'bg-indigo-600 text-white':'bg-gray-100'}`}>Home</button>
-            <button onClick={openSession} className={`px-3 py-1 rounded ${showSession?'bg-indigo-600 text-white':'bg-gray-100'}`}>Session</button>
-            <button onClick={openGame} className={`px-3 py-1 rounded ${showGame?'bg-indigo-600 text-white':'bg-gray-100'}`}>Game</button>
-          </nav>
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-center">
+          <h1 className="text-4xl font-extrabold text-indigo-600">Planning Poker</h1>
         </div>
       </header>
 

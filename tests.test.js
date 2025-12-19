@@ -1,12 +1,312 @@
-import { supabase } from '../src/lib/supabase';
-import * as JS from '../src/script/JoinSession';
-import * as CS from '../src/script/CreateSession';
-import * as LG from '../src/script/Login';
+import { generateCode } from './src/services/sessions';
 
-jest.mock('../src/lib/supabase', () => ({
-supabase: { from: jest.fn() }
+// Mock Supabase
+jest.mock('./src/lib/supabase', () => ({
+  supabase: {
+    from: jest.fn(() => ({
+      select: jest.fn(() => ({
+        eq: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn(() => Promise.resolve({ data: null, error: null })),
+            maybeSingle: jest.fn(() => Promise.resolve({ data: null, error: null })),
+            order: jest.fn(() => Promise.resolve({ data: [], error: null }))
+          })),
+          single: jest.fn(() => Promise.resolve({ data: null, error: null })),
+          maybeSingle: jest.fn(() => Promise.resolve({ data: null, error: null })),
+          order: jest.fn(() => Promise.resolve({ data: [], error: null }))
+        }))
+      })),
+      insert: jest.fn(() => ({
+        select: jest.fn(() => ({
+          single: jest.fn(() => Promise.resolve({ data: { id: '1', name: 'test' }, error: null }))
+        }))
+      })),
+      update: jest.fn(() => ({
+        eq: jest.fn(() => ({
+          select: jest.fn(() => ({
+            single: jest.fn(() => Promise.resolve({ data: { id: '1' }, error: null })),
+            maybeSingle: jest.fn(() => Promise.resolve({ data: { id: '1' }, error: null }))
+          }))
+        }))
+      })),
+      delete: jest.fn(() => ({
+        eq: jest.fn(() => ({
+          eq: jest.fn(() => Promise.resolve({ error: null }))
+        }))
+      }))
+    }))
+  }
 }));
 
-test("generate 6 char long code", () => {expect(JS.generateCode()).toBe(length(6));});
+// ============================================
+// TESTS SESSIONS
+// ============================================
+
+describe('Sessions Service', () => {
+  describe('generateCode', () => {
+    test('génère un code de 6 caractères', () => {
+      const code = generateCode();
+      expect(code).toHaveLength(6);
+    });
+
+    test('génère un code numérique', () => {
+      const code = generateCode();
+      expect(/^\d{6}$/.test(code)).toBe(true);
+    });
+
+    test('génère un code entre 100000 et 999999', () => {
+      const code = generateCode();
+      const num = parseInt(code, 10);
+      expect(num).toBeGreaterThanOrEqual(100000);
+      expect(num).toBeLessThan(1000000);
+    });
+
+    test('génère des codes différents', () => {
+      const codes = new Set();
+      for (let i = 0; i < 100; i++) {
+        codes.add(generateCode());
+      }
+      expect(codes.size).toBeGreaterThan(90);
+    });
+  });
+});
+
+// ============================================
+// TESTS PARTICIPANTS
+// ============================================
+
+describe('Participants Service', () => {
+  const { isPseudoExists, createParticipant, deleteParticipant } = require('./src/services/participants');
+  const { supabase } = require('./src/lib/supabase');
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('isPseudoExists', () => {
+    test('retourne false si pseudo inexistant', async () => {
+      supabase.from.mockReturnValue({
+        select: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            maybeSingle: jest.fn(() => Promise.resolve({ data: null, error: null }))
+          }))
+        }))
+      });
+
+      const result = await isPseudoExists('nouveauPseudo');
+      expect(result).toBe(false);
+    });
+
+    test('retourne true si pseudo existe', async () => {
+      supabase.from.mockReturnValue({
+        select: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            maybeSingle: jest.fn(() => Promise.resolve({ data: { name: 'existant' }, error: null }))
+          }))
+        }))
+      });
+
+      const result = await isPseudoExists('existant');
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('deleteParticipant', () => {
+    test('retourne true si suppression réussie', async () => {
+      supabase.from.mockReturnValue({
+        delete: jest.fn(() => ({
+          eq: jest.fn(() => Promise.resolve({ error: null }))
+        }))
+      });
+
+      const result = await deleteParticipant('participant-id');
+      expect(result).toBe(true);
+    });
+
+    test('retourne false si erreur', async () => {
+      supabase.from.mockReturnValue({
+        delete: jest.fn(() => ({
+          eq: jest.fn(() => Promise.resolve({ error: { message: 'Erreur' } }))
+        }))
+      });
+
+      const result = await deleteParticipant('participant-id');
+      expect(result).toBe(false);
+    });
+  });
+});
+
+// ============================================
+// TESTS TASKS
+// ============================================
+
+describe('Tasks Service', () => {
+  const { fetchTasks, createTask, deleteTask } = require('./src/services/tasks');
+  const { supabase } = require('./src/lib/supabase');
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('fetchTasks', () => {
+    test('retourne liste vide si aucune tâche', async () => {
+      supabase.from.mockReturnValue({
+        select: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            order: jest.fn(() => Promise.resolve({ data: [], error: null }))
+          }))
+        }))
+      });
+
+      const result = await fetchTasks('session-id');
+      expect(result).toEqual([]);
+    });
+
+    test('retourne les tâches si présentes', async () => {
+      const mockTasks = [
+        { id: '1', title: 'Tâche 1', session_id: 'session-id' },
+        { id: '2', title: 'Tâche 2', session_id: 'session-id' }
+      ];
+      supabase.from.mockReturnValue({
+        select: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            order: jest.fn(() => Promise.resolve({ data: mockTasks, error: null }))
+          }))
+        }))
+      });
+
+      const result = await fetchTasks('session-id');
+      expect(result).toEqual(mockTasks);
+      expect(result).toHaveLength(2);
+    });
+  });
+
+  describe('createTask', () => {
+    test('crée une tâche avec succès', async () => {
+      const mockTask = { id: '1', title: 'Nouvelle tâche', session_id: 'session-id' };
+      supabase.from.mockReturnValue({
+        insert: jest.fn(() => ({
+          select: jest.fn(() => ({
+            single: jest.fn(() => Promise.resolve({ data: mockTask, error: null }))
+          }))
+        }))
+      });
+
+      const result = await createTask('session-id', 'Nouvelle tâche');
+      expect(result).toEqual(mockTask);
+    });
+
+    test('retourne null si erreur', async () => {
+      supabase.from.mockReturnValue({
+        insert: jest.fn(() => ({
+          select: jest.fn(() => ({
+            single: jest.fn(() => Promise.resolve({ data: null, error: { message: 'Erreur' } }))
+          }))
+        }))
+      });
+
+      const result = await createTask('session-id', 'Nouvelle tâche');
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('deleteTask', () => {
+    test('retourne true si suppression réussie', async () => {
+      supabase.from.mockReturnValue({
+        delete: jest.fn(() => ({
+          eq: jest.fn(() => Promise.resolve({ error: null }))
+        }))
+      });
+
+      const result = await deleteTask('task-id');
+      expect(result).toBe(true);
+    });
+  });
+});
+
+// ============================================
+// TESTS VOTES
+// ============================================
+
+describe('Votes Service', () => {
+  const { fetchVotes, resetVotes, deleteVote } = require('./src/services/votes');
+  const { supabase } = require('./src/lib/supabase');
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('fetchVotes', () => {
+    test('retourne liste vide si aucun vote', async () => {
+      supabase.from.mockReturnValue({
+        select: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            order: jest.fn(() => Promise.resolve({ data: [], error: null }))
+          }))
+        }))
+      });
+
+      const result = await fetchVotes('task-id');
+      expect(result).toEqual([]);
+    });
+
+    test('retourne les votes si présents', async () => {
+      const mockVotes = [
+        { id: '1', task_id: 'task-id', participant_id: 'p1', value: 5 },
+        { id: '2', task_id: 'task-id', participant_id: 'p2', value: 8 }
+      ];
+      supabase.from.mockReturnValue({
+        select: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            order: jest.fn(() => Promise.resolve({ data: mockVotes, error: null }))
+          }))
+        }))
+      });
+
+      const result = await fetchVotes('task-id');
+      expect(result).toEqual(mockVotes);
+      expect(result).toHaveLength(2);
+    });
+  });
+
+  describe('resetVotes', () => {
+    test('retourne true si réinitialisation réussie', async () => {
+      supabase.from.mockReturnValue({
+        delete: jest.fn(() => ({
+          eq: jest.fn(() => Promise.resolve({ error: null }))
+        }))
+      });
+
+      const result = await resetVotes('task-id');
+      expect(result).toBe(true);
+    });
+
+    test('retourne false si erreur', async () => {
+      supabase.from.mockReturnValue({
+        delete: jest.fn(() => ({
+          eq: jest.fn(() => Promise.resolve({ error: { message: 'Erreur' } }))
+        }))
+      });
+
+      const result = await resetVotes('task-id');
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('deleteVote', () => {
+    test('retourne true si suppression réussie', async () => {
+      supabase.from.mockReturnValue({
+        delete: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            eq: jest.fn(() => Promise.resolve({ error: null }))
+          }))
+        }))
+      });
+
+      const result = await deleteVote('task-id', 'participant-id');
+      expect(result).toBe(true);
+    });
+  });
+});
 
 

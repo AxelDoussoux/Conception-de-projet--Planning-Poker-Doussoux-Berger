@@ -1,75 +1,132 @@
-# React + TypeScript + Vite
+# Planning Poker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Application web de Planning Poker pour l'estimation collaborative des tâches en équipe Agile.
 
-Currently, two official plugins are available:
+## Description
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Planning Poker est un outil d'estimation utilisé dans les méthodologies Agile (Scrum). Les membres de l'équipe votent simultanément sur la complexité d'une tâche en utilisant des cartes (suite de Fibonacci : 0, 1, 2, 3, 5, 8, 13, 20, 40, café, ?).
 
-## React Compiler
+### Fonctionnalités
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+- **Connexion** : Créer ou réutiliser un pseudo
+- **Création de session** : Nommer la session, choisir le mode de jeu, ajouter des tâches
+- **Modes de jeu** : Strict (unanimité) ou Moyenne
+- **Rejoindre** : Code à 6 chiffres pour rejoindre une session
+- **Vote en temps réel** : Votes synchronisés via Supabase
+- **Résultats** : Affichage des votes après validation
+- **Récapitulatif** : Historique des votes en fin de session
 
-Note: This will impact Vite dev & build performances.
+## Technologies
 
-## Expanding the ESLint configuration
+| Technologie | Usage |
+|-------------|-------|
+| **React 19** | Framework UI |
+| **TypeScript** | Typage statique |
+| **Vite** | Build & Dev server |
+| **Tailwind CSS** | Styling |
+| **Supabase** | Backend (BDD PostgreSQL + Realtime) |
+| **Jest** | Tests unitaires |
+| **TypeDoc** | Documentation |
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Installation
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+```bash
+# Cloner le repo
+git clone https://github.com/VOTRE_USERNAME/planning-poker.git
+cd planning-poker
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+# Installer les dépendances
+npm install
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Configurer les variables d'environnement
+cp .env.example .env.local
+# Éditer .env.local avec vos clés Supabase
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Variables d'environnement
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Créer un fichier `.env.local` :
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```env
+VITE_SUPABASE_URL=https://votre-projet.supabase.co
+VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=votre_cle_publique
 ```
+
+## Scripts
+
+| Commande | Description |
+|----------|-------------|
+| `npm run dev` | Lancer le serveur de développement |
+| `npm run build` | Build de production |
+| `npm run preview` | Prévisualiser le build |
+| `npm run test` | Exécuter les tests unitaires |
+| `npm run docs` | Générer la documentation |
+| `npm run lint` | Vérifier le code avec ESLint |
+
+## Structure du projet
+
+```
+src/
+├── blocks/           # Composants de page (Home, Session, Game)
+├── context/          # React Context (SessionContext)
+├── hooks/            # Hooks personnalisés
+├── lib/              # Configuration (Supabase, types)
+├── services/         # Logique métier (CRUD Supabase)
+│   ├── participants.ts
+│   ├── sessions.ts
+│   ├── tasks.ts
+│   └── votes.ts
+└── App.tsx           # Composant principal
+```
+
+## Base de données (Supabase)
+
+### Tables
+
+| Table | Description |
+|-------|-------------|
+| `sessions` | Sessions de Planning Poker |
+| `participants` | Utilisateurs connectés |
+| `tasks` | Tâches à estimer |
+| `votes` | Votes des participants |
+
+## Tests
+
+```bash
+npm run test
+```
+
+Les tests couvrent les 4 services :
+- `sessions.ts` : Génération de code, création/recherche de session
+- `participants.ts` : CRUD participants
+- `tasks.ts` : CRUD tâches
+- `votes.ts` : CRUD votes
+
+## Documentation
+
+```bash
+npm run docs
+```
+
+La documentation JSDoc est générée dans le dossier `docs/`.
+
+## Déploiement (GitHub Pages)
+
+Le projet est configuré pour un déploiement automatique sur GitHub Pages via GitHub Actions.
+
+1. Ajouter les secrets dans **Settings → Secrets → Actions** :
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY`
+
+2. Activer GitHub Pages : **Settings → Pages → Source → GitHub Actions**
+
+3. Push sur `main` pour déclencher le déploiement
+
+## Auteurs
+
+- Projet réalisé dans le cadre du cours M1 Info - Conception de projet
+
+## Licence
+
+ISC
+

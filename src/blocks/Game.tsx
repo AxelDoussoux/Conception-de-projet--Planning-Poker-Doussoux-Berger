@@ -121,7 +121,10 @@ export function GameBlock({ onOpenHome }: { onOpenHome: () => void }) {
 const handleSelectCard = (value: CardValue) => setSelectedCard(value)
 
 // retourne le nom du fichier correspondant à la CardValue 
-const getCardImage = (card: CardValue | null) => `/cards/cartes_${card}.svg`
+const getCardImage = (card: CardValue | null) => {
+  const base = import.meta.env.BASE_URL || '/';
+  return `${base}cards/cartes_${card}.svg`;
+}
 
 // fonction de validation du vote pour la tâche en cours
 const handleValidateVote = async () => {

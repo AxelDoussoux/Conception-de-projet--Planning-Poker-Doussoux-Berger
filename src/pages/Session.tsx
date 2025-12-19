@@ -1,14 +1,17 @@
 import { useState, type JSX } from "react"
-import { SlUser } from "react-icons/sl"
-import type { Task } from "../Types/Task"
+import type { Tasks } from "../lib/supabase"
 import { useNavigate } from "react-router-dom"
-import type { GameMode } from "../Types/GameMode"
+import type { GameMode } from "../lib/types"
+import { useSession } from "../context/SessionContext"
+import { createSession } from "../services/sessions"
+import { findParticipantByName, createParticipant } from "../services/participants"
 
 
 export function CreateSession() {
     const [sessionName, setSessionName] = useState("")
+    const [pseudo, setPseudo] = useState<string>("")
     const [taskTitle, setTaskTitle] = useState("")
-    const [tasks, setTasks] = useState<Task[]>([])
+    const [tasks, setTasks] = useState<Tasks[]>([])
     const [gameMode, setGameMode] = useState<GameMode>("strict");
 
     const addTask = () => {
@@ -18,7 +21,11 @@ export function CreateSession() {
         ...prev,
         {
             id: crypto.randomUUID(),
-            title: taskTitle.trim()
+            title: taskTitle.trim(),
+            session_id: '',
+            description: '',
+            is_current: false,
+            created_at: new Date().toISOString()
         }
         ])
     
@@ -31,9 +38,15 @@ export function CreateSession() {
 
     const navigate = useNavigate()
 
-    const handleContinue = () => {
+    const { setCurrentSession, setCurrentParticipant } = useSession()
 
-        navigate("/game")
+    const handleContinue = async () => {
+        if (!pseudo.trim() || !sessionName.trim()) return alert('Entrez un pseudo et un nom de session');
+        let participant = await findParticipantByName(pseudo.trim())
+        if (!participant) participant = await createParticipant(pseudo.trim())
+        if (!participant) return alert('Impossible de créer ou trouver le participant.')
+        await createSession(sessionName, pseudo, setCurrentSession, setCurrentParticipant);
+        navigate('/game')
     }
     
     return (

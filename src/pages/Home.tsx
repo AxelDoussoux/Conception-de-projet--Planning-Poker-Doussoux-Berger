@@ -1,6 +1,9 @@
 import { useState, type JSX } from "react"
 import { SlUser } from "react-icons/sl"
 import { useNavigate } from "react-router-dom"
+import { useSession } from "../context/SessionContext"
+import { createSession, joinSession } from "../services/sessions"
+import { findParticipantByName, createParticipant } from "../services/participants"
 
 
 /**
@@ -10,14 +13,13 @@ export default function Home(): JSX.Element {
   const [menuOpen, setMenuOpen] = useState<boolean>(false)
   const [showCreateForm, setShowCreateForm] = useState<boolean>(false)
   const [showJoinForm, setShowJoinForm] = useState<boolean>(false)
-  let newSession = false
+  const [pseudo, setPseudo] = useState<string>("")
+  const [sessionName, setSessionName] = useState<string>("")
+  const [sessionCode, setSessionCode] = useState<string>("")
+  
 
   const toggleMenu = (): void => {
     setMenuOpen(open => !open)
-  }
-
-  const handleCreateSession = (): void => {
-    setShowCreateForm(true)
   }
 
   const handleJoinSession = (): void => {
@@ -28,6 +30,26 @@ export default function Home(): JSX.Element {
 
   const handleContinue = () => {
     navigate("/session")
+  }
+
+  const { setCurrentSession, setCurrentParticipant } = useSession()
+
+  const onCreate = async () => {
+    if (!pseudo.trim() || !sessionName.trim()) return alert('Entrez un pseudo et un nom de session');
+    let participant = await findParticipantByName(pseudo.trim())
+    if (!participant) participant = await createParticipant(pseudo.trim())
+    if (!participant) return alert('Impossible de créer ou trouver le participant.')
+    await createSession(sessionName, pseudo, setCurrentSession, setCurrentParticipant);
+    navigate('/game');
+  }
+
+  const onJoin = async () => {
+    if (!pseudo.trim() || !sessionCode.trim()) return alert('Entrez un pseudo et le code de session');
+    let participant = await findParticipantByName(pseudo.trim())
+    if (!participant) participant = await createParticipant(pseudo.trim())
+    if (!participant) return alert('Impossible de créer ou trouver le participant.')
+    await joinSession(sessionCode.trim(), pseudo.trim(), setCurrentSession, setCurrentParticipant);
+    navigate('/game');
   }
 
   
@@ -78,6 +100,8 @@ export default function Home(): JSX.Element {
                       Entrez un pseudo
                     </h2>
                     <input
+                      value={pseudo}
+                      onChange={e => setPseudo(e.target.value)}
                       type="text"
                       placeholder="Votre pseudo..."
                       className="text-xs text-gray-500 mt-3 w-full px-3 py-2 border rounded-lg"
@@ -129,13 +153,40 @@ export default function Home(): JSX.Element {
                     </button>
                   </div>
                   <input
+                    value={sessionCode}
+                    onChange={e => setSessionCode(e.target.value)}
                     type="text"
                     placeholder="Code de session..."
                     className="text-xs text-gray-500 mt-3 w-full px-3 py-2 border rounded-lg"
                   />
-                  <button className="mt-3 px-4 py-2 bg-indigo-600 text-white rounded-lg">
-                    Valider
-                  </button>
+                  <div className="mt-3 flex gap-2">
+                    <button onClick={onJoin} className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg">Rejoindre</button>
+                    <button onClick={() => { setShowJoinForm(false); }} className="px-4 py-2 bg-gray-200 rounded-lg">Annuler</button>
+                  </div>
+                </div>
+              )}
+
+              {showCreateForm && (
+                <div className="p-6 border-t">
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => setShowCreateForm(false)}
+                      className="text-gray-400 hover:text-gray-600 text-xs"
+                    >
+                      Fermer
+                    </button>
+                  </div>
+                  <input
+                    value={sessionName}
+                    onChange={e => setSessionName(e.target.value)}
+                    type="text"
+                    placeholder="Nom de la session..."
+                    className="text-xs text-gray-500 mt-3 w-full px-3 py-2 border rounded-lg"
+                  />
+                  <div className="mt-3 flex gap-2">
+                    <button onClick={onCreate} className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg">Créer</button>
+                    <button onClick={() => setShowCreateForm(false)} className="px-4 py-2 bg-gray-200 rounded-lg">Annuler</button>
+                  </div>
                 </div>
               )}
 

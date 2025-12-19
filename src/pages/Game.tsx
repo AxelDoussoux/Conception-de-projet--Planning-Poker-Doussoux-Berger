@@ -1,71 +1,99 @@
-import { useState, type JSX } from "react"
-//import { SlUser } from "react-icons/sl"
-import type { Task } from "../Types/Task"
+import { useState, useEffect } from "react"
+import { useSession } from "../context/SessionContext"
+import { fetchTasks, subscribeToTasks } from "../services/tasks"
+import { fetchVotes, submitVote } from "../services/votes"
+import { getSessionParticipants } from "../services/sessions"
+import type { Tasks } from "../lib/supabase"
+import type { Votes } from "../lib/supabase"
 
 // valeurs possibles d'une cartes de planning poker 
-type CardValue =
-  | 0 | 1 | 2 | 3 | 5 | 8 | 13 | 20 | 40
-  | "cafe" | "interro"
-
+type CardValue = 0 | 1 | 2 | 3 | 5 | 8 | 13 | 20 | 40 | "coffee" | "question";
 
 export default function Game() {
 
   // carte sélectionné par l'utilisateur pour la tâche active
-  const [currentTaskIndex, setCurrentTaskIndex] = useState(0)
+  const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   // variable booleenne : si vrai, on affige la vue résultats
-  const [showResults, setShowResults] = useState(false)
+  const [showResults, setShowResults] = useState(false);
   // vote de l'utilisateur
-  const [votes, setVotes] = useState<{ userId: string; value: CardValue | null }[]>([])
+  const [votes, setVotes] = useState<{ userId: string; value: CardValue | null }[]>([]);
   // carte sélectionnée par l'utilisateur
-  const [selectedCard, setSelectedCard] = useState<CardValue | null>(null)
+  const [selectedCard, setSelectedCard] = useState<CardValue | null>(null);
 
-  // listes des tâches à évaluer (mocking)
-  const tasks = [
-    { id: "1", title: "Créer la page Planning Poker" },
-    { id: "2", title: "Ecrire le rapport" },
-    // autres tâches...
-  ]
-
+  // listes des tâches à évaluer (récupérées depuis le service)
+  const [tasks, setTasks] = useState<Tasks[]>([]);
+  const { currentSession, currentParticipant } = useSession()
 
   // sélection de la tâche en cours dans la liste tasks
-  const currentTask = tasks[currentTaskIndex]
+  const currentTask = tasks[currentTaskIndex] ?? null;
+
+  useEffect(() => {
+    if (!currentSession) return;
+
+    let removeFn: (() => Promise<void>) | undefined;
+
+    void fetchTasks(currentSession.id).then(setTasks).catch(err => console.error(err));
+
+    try {
+      const maybe = subscribeToTasks(currentSession.id, (fetched: Tasks[]) => setTasks(fetched));
+      if (maybe && typeof (maybe as any).then === 'function') {
+        (maybe as unknown as Promise<() => Promise<void>>).then(fn => { removeFn = fn })
+      } else {
+        removeFn = maybe as any
+      }
+    } catch (err) {
+      console.error('Erreur souscription tasks:', err)
+    }
+
+    return () => {
+      if (removeFn) void removeFn()
+    }
+  }, [currentSession])
 
 // gère la sélection des cartes avant la validation
-const handleSelectCard = (value: CardValue) => {
-  //console.log("Carte sélectionnée :", value)
-  setSelectedCard(value)
-  //console.log("selectedCard =", selectedCard)
-
-}
+const handleSelectCard = (value: CardValue) => setSelectedCard(value)
 
 // retourne le nom du fichier correspondant à la CardValue 
-const getCardImage = (card: CardValue | null) => {
-  return typeof card === "number"
-    ? `/cards/cartes_${card}.svg`
-    : `/cards/cartes_${card}.svg`
-}
+const getCardImage = (card: CardValue | null) => `/cards/cartes_${card}.svg`
 
 // fonction de validation du vote pour la tâche en cours
-const handleValidateVote = () => {
-  if (selectedCard === null) return;
+const handleValidateVote = async () => {
+  if (selectedCard === null || !currentTask) return;
 
-  // votes simulés pour tester l'affichage
-  const simulatedVotes: { userId: string; value: CardValue | null }[] = [
-    { userId: "Valentin", value: 5 as CardValue },
-    { userId: "Axel", value: "coffee" as CardValue },
-    { userId: "moi", value: selectedCard }
-  ];
+  // si vote numérique, on envoie au back
+  if (typeof selectedCard === 'number' && currentParticipant) {
+    await submitVote(currentTask.id, currentParticipant.id, selectedCard as number).catch(err => console.error(err))
+  }
 
-  //enregistre le vote et affiche les resultats
-  setVotes(simulatedVotes);
-  setShowResults(true);
+  // récupérer les votes pour la tâche (affichage)
+    if (currentTask) {
+      const fetchedVotes: Votes[] = await fetchVotes(currentTask.id).catch(() => [])
+
+      // récupère les participants de la session pour résoudre les ids en noms
+      let participantsMap: Record<string, string> = {}
+      if (currentSession) {
+        const parts = await getSessionParticipants(currentSession.id).catch(() => null)
+        if (parts && Array.isArray(parts)) {
+          participantsMap = parts.reduce((acc, p) => { acc[p.id] = p.name; return acc }, {} as Record<string,string>)
+        }
+      }
+
+      const mapped = fetchedVotes.map(v => ({ userId: participantsMap[v.participant_id] ?? v.participant_id, value: (v.value as CardValue) }))
+      // ajouter le vote local si non numérique
+      if (typeof selectedCard !== 'number' && currentParticipant) {
+        mapped.push({ userId: participantsMap[currentParticipant.id] ?? currentParticipant.id, value: selectedCard })
+      }
+      setVotes(mapped)
+    }
+
+  setShowResults(true)
   // passer au vote de la tâche suivante au bout de 5 secondes
   setTimeout(() => {
     setShowResults(false)
     setSelectedCard(null)
     setVotes([])
     setCurrentTaskIndex((prev) => (prev + 1 < tasks.length ? prev + 1 : prev))
-  }, 5000) 
+  }, 5000)
 
 };
 

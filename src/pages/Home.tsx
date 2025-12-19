@@ -15,19 +15,19 @@ export function HomeBlock({ onOpenSession, onOpenGame }: { onOpenSession: () => 
 
   // Valider le pseudo (chercher ou créer dans Supabase)
   const handleLogin = async () => {
-    if (!pseudo.trim()) return alert("Entrez un pseudo")
+    if (!pseudo.trim()) return
     let participant = await findParticipantByName(pseudo.trim())
     if (!participant) {
       participant = await createParticipant(pseudo.trim())
     }
-    if (!participant) return alert("Impossible de valider le pseudo.")
+    if (!participant) return
     setCurrentParticipant(participant)
     setLoggedIn(true)
   }
 
   // Rejoindre une session
   const handleJoin = async () => {
-    if (!sessionCode.trim()) return alert("Entrez le code de session")
+    if (!sessionCode.trim()) return
     await joinSession(sessionCode.trim(), pseudo.trim(), setCurrentSession, setCurrentParticipant)
     onOpenGame()
   }

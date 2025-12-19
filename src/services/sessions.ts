@@ -72,11 +72,11 @@ export async function createSession(sessionName: string, pseudo: string, gameMod
   try {
     const participant: Participant | null = await findParticipantByName(pseudo.trim());
     if (!participant) {
-      alert('Participant introuvable. Veuillez d\'abord vous connecter.');
+      console.error('Participant introuvable.');
       return null;
     }
     if (participant.session_id) {
-      alert('Vous êtes déjà connecté à une session.');
+      console.error('Déjà connecté à une session.');
       return null;
     }
     const uniqueCode = await generateUniqueCode();
@@ -88,43 +88,50 @@ export async function createSession(sessionName: string, pseudo: string, gameMod
 
     if (error || !session) {
       console.error('Erreur lors de la création de la session :', error);
-      alert('Échec de la création de la session.');
       return null;
     }
 
     const createdSession: Session = session as Session;
     const connectedParticipant: Participant | null = await addParticipantToSession(createdSession.id, participant.id);
     if (!connectedParticipant) {
-      alert('Session créée mais échec de la connexion du participant.');
+      console.error('Session créée mais échec de la connexion du participant.');
       return null;
     }
 
     setCurrentSession(createdSession);
     setCurrentParticipant(connectedParticipant);
-    alert(`Session créée avec succès !\n\nNom : ${createdSession.name}\nCode : ${createdSession.code}\nParticipant : ${connectedParticipant.name}\nMode de jeu : ${createdSession.gamemode}`);
+    console.log(`Session créée: ${createdSession.name} (Code: ${createdSession.code})`);
     return createdSession;
   } catch (error) {
     console.error('Erreur lors de la création de la session :', error);
-    alert('Échec de la création de la session.');
     return null;
   }
 }
 
 export async function joinSession(sessionCode: string, pseudo: string, setCurrentSession: (s: Session | null) => void, setCurrentParticipant: (p: Participant | null) => void): Promise<void> {
   const session = await findSessionByCode(sessionCode);
-  if (!session) return alert('Session introuvable ou inactive. Vérifiez le code.');
+  if (!session) {
+    console.error('Session introuvable ou inactive.');
+    return;
+  }
 
   const participant = await findParticipantByName(pseudo);
-  if (!participant) return alert('Participant introuvable. Veuillez d\'abord vous connecter.');
-  if (participant.session_id) return alert('Vous êtes déjà connecté à une session.');
+  if (!participant) {
+    console.error('Participant introuvable.');
+    return;
+  }
+  if (participant.session_id) {
+    console.error('Déjà connecté à une session.');
+    return;
+  }
 
   const updatedParticipant = await addParticipantToSession(session.id, participant.id);
   if (updatedParticipant) {
     setCurrentSession(session);
     setCurrentParticipant(updatedParticipant);
-    alert(`Vous avez rejoint la session : ${session.name} (Code: ${session.code})`);
+    console.log(`Rejoint la session: ${session.name} (Code: ${session.code})`);
   } else {
-    alert('Échec de la connexion à la session.');
+    console.error('Échec de la connexion à la session.');
   }
 }
 
@@ -200,23 +207,28 @@ export async function disconnectParticipants(sessionId: string): Promise<boolean
 export async function disableSession(sessionId: string, setCurrentSession: (s: Session | null) => void): Promise<void> {
   const activeSession = await findActiveSession(sessionId);
   if (!activeSession) {
-    alert('Session introuvable ou déjà désactivée.');
+    console.error('Session introuvable ou déjà désactivée.');
     setCurrentSession(null);
     return;
   }
 
   const participants = await getSessionParticipants(sessionId);
-  if (!participants) return alert('Impossible de récupérer les participants de la session.');
+  if (!participants) {
+    console.error('Impossible de récupérer les participants de la session.');
+    return;
+  }
 
   const session = await deactivateSession(sessionId);
-  if (!session) return alert('Erreur lors de la désactivation de la session.');
+  if (!session) {
+    console.error('Erreur lors de la désactivation de la session.');
+    return;
+  }
 
   const disconnected = await disconnectParticipants(sessionId);
-  if (!disconnected) alert('Erreur lors de la déconnexion des participants.');
+  if (!disconnected) console.error('Erreur lors de la déconnexion des participants.');
 
   setCurrentSession(null);
 
   const participantNames = participants.length > 0 ? participants.map(p => p.name).join(', ') : 'Aucun participant';
-  alert(`La session "${session.name}" est maintenant terminée.\n\nParticipants : ${participantNames}\n\nMerci d'avoir participé !`);
-  console.log(`Session ${session.id} désactivée. ${participants.length} participant(s) notifié(s).`);
+  console.log(`Session ${session.name} terminée. Participants: ${participantNames}`);
 }

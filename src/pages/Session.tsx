@@ -45,9 +45,9 @@ export function SessionBlock({ onOpenGame, onOpenHome }: { onOpenGame: () => voi
     }
 
     const handleContinue = async () => {
-        if (!currentParticipant) return alert('Vous devez d\'abord vous connecter depuis Home');
-        if (!sessionName.trim()) return alert('Entrez un nom de session');
-        if (tasks.length === 0) return alert('Ajoutez au moins une tâche');
+        if (!currentParticipant) return;
+        if (!sessionName.trim()) return;
+        if (tasks.length === 0) return;
         
         const session = await createSession(sessionName, currentParticipant.name, gameMode, setCurrentSession, setCurrentParticipant);
         if (!session) return;

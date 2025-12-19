@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/planning-poker/',
+  base: '/Conception-de-projet--Planning-Poker-Doussoux-Berger/',
   plugins: [
     react({
       babel: {

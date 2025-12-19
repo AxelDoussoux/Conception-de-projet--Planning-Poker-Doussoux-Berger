@@ -1,7 +1,7 @@
 import { useState } from "react"
-import { HomeBlock } from "./pages/Home"
-import { SessionBlock } from "./pages/Session"
-import { GameBlock } from "./pages/Game"
+import { HomeBlock } from "./blocks/Home"
+import { SessionBlock } from "./blocks/Session"
+import { GameBlock } from "./blocks/Game"
 
 export default function App() {
   const [showHome, setShowHome] = useState(true)

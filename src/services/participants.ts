@@ -34,10 +34,9 @@ export async function findParticipantByName(pseudo: string): Promise<Participant
 }
 
 export async function createParticipant(pseudo: string): Promise<Participant | null> {
-  const exists: boolean = await isPseudoExists(pseudo);
-  if (exists) {
-    alert('Ce pseudo est déjà utilisé. Veuillez en choisir un autre.');
-    return null;
+  const existingParticipant = await findParticipantByName(pseudo);
+  if (existingParticipant) {
+    return existingParticipant;
   }
 
   const { data, error } = await supabase

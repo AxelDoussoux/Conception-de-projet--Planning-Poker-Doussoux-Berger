@@ -36,20 +36,37 @@ export function SessionProvider({ children }: { children: ReactNode }) {
             if (currentSession) {
                 const freshSession = await findActiveSession(currentSession.id);
                 if (freshSession) {
-                    setCurrentSession(freshSession);
-                    // optionally fetch participants (not stored in context by default)
+                    // Ne met à jour que si les données ont changé
+                    if (JSON.stringify(freshSession) !== JSON.stringify(currentSession)) {
+                        setCurrentSession(freshSession);
+                        console.log('Session rafraîchie (changement détecté)');
+                    }
                     const participants = await getSessionParticipants(currentSession.id);
                     console.log('Participants rafraîchis:', participants?.length ?? 0);
                 } else {
                     // session inactive / supprimée
+                    console.log('Session inactive ou supprimée, nettoyage...');
                     setCurrentSession(null);
+                    setCurrentParticipant(null);
                 }
             }
 
-            if (currentParticipant) {
+            if (currentParticipant && currentSession) {
+                // Ne rafraîchir le participant que s'il appartient à une session active
                 const freshParticipant = await findParticipantByName(currentParticipant.name);
                 if (freshParticipant) {
-                    setCurrentParticipant(freshParticipant);
+                    // Vérifier que le participant est toujours dans la session active
+                    if (freshParticipant.session_id === currentSession.id) {
+                        // Ne met à jour que si les données ont changé
+                        if (JSON.stringify(freshParticipant) !== JSON.stringify(currentParticipant)) {
+                            setCurrentParticipant(freshParticipant);
+                            console.log('Participant rafraîchi (changement détecté)');
+                        }
+                    } else {
+                        // Le participant n'est plus dans cette session
+                        console.log('Participant déconnecté de la session');
+                        setCurrentParticipant(null);
+                    }
                 } else {
                     setCurrentParticipant(null);
                 }

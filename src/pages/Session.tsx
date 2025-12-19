@@ -3,10 +3,9 @@ import type { Tasks } from "../lib/supabase"
 import type { GameMode } from "../lib/types"
 import { useSession } from "../context/SessionContext"
 import { createSession } from "../services/sessions"
-import { useNavigate } from "react-router-dom"
 
 
-export function SessionBlock({ onNavigate }: { onNavigate: (page: 'home'|'session'|'game') => void }): JSX.Element {
+export function SessionBlock({ onOpenGame }: { onOpenGame: () => void }): JSX.Element {
     const [sessionName, setSessionName] = useState("")
     const [pseudo, setPseudo] = useState<string>("")
     const [taskTitle, setTaskTitle] = useState("")
@@ -35,30 +34,21 @@ export function SessionBlock({ onNavigate }: { onNavigate: (page: 'home'|'sessio
         setTasks(prev => prev.filter(task => task.id !== id))
     }
 
-    const navigate = useNavigate()
-
     const { setCurrentSession, setCurrentParticipant } = useSession()
 
     const handleContinue = async () => {
         if (!pseudo.trim() || !sessionName.trim()) return alert('Entrez un pseudo et un nom de session');
         await createSession(sessionName, pseudo, setCurrentSession, setCurrentParticipant);
-        onNavigate('game')
+        onOpenGame()
     }
     
     return (
         <div className="min-h-screen bg-gray-50 flex justify-center p-6">
         <div className="w-full max-w-xl bg-white rounded-2xl shadow p-6 space-y-6">
-        <header className="p-6 text-center">
-            <h1 className="text-3xl font-extrabold text-gray-800 m-0 p-0">
-                Planning Poker
-            </h1>
-            <p className="text-sm text-gray-500 m-0 p-0">
-                Estimez les tâches en équipe rapidement
-            </p>
-        </header>
+        
         
             <h1 className="text-2xl font-bold text-gray-800">
-            Préparer la session
+            Créer la session
             </h1>
     
             {/* Nom de la session */}

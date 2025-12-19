@@ -9,7 +9,7 @@ import type { Votes } from "../lib/supabase"
 // valeurs possibles d'une cartes de planning poker 
 type CardValue = 0 | 1 | 2 | 3 | 5 | 8 | 13 | 20 | 40 | "coffee" | "question";
 
-export function GameBlock({ onNavigate }: { onNavigate?: (page: 'home'|'session'|'game') => void }) {
+export function GameBlock() {
 
   // carte sélectionné par l'utilisateur pour la tâche active
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);

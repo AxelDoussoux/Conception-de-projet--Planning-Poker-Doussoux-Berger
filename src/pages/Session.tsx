@@ -1,13 +1,12 @@
 import { useState, type JSX } from "react"
 import type { Tasks } from "../lib/supabase"
-import { useNavigate } from "react-router-dom"
 import type { GameMode } from "../lib/types"
 import { useSession } from "../context/SessionContext"
 import { createSession } from "../services/sessions"
-import { findParticipantByName, createParticipant } from "../services/participants"
+import { useNavigate } from "react-router-dom"
 
 
-export function CreateSession() {
+export function SessionBlock({ onNavigate }: { onNavigate: (page: 'home'|'session'|'game') => void }): JSX.Element {
     const [sessionName, setSessionName] = useState("")
     const [pseudo, setPseudo] = useState<string>("")
     const [taskTitle, setTaskTitle] = useState("")
@@ -42,11 +41,8 @@ export function CreateSession() {
 
     const handleContinue = async () => {
         if (!pseudo.trim() || !sessionName.trim()) return alert('Entrez un pseudo et un nom de session');
-        let participant = await findParticipantByName(pseudo.trim())
-        if (!participant) participant = await createParticipant(pseudo.trim())
-        if (!participant) return alert('Impossible de créer ou trouver le participant.')
         await createSession(sessionName, pseudo, setCurrentSession, setCurrentParticipant);
-        navigate('/game')
+        onNavigate('game')
     }
     
     return (

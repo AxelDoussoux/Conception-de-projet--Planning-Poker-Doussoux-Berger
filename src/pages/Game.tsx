@@ -23,12 +23,14 @@ export default function Game() {
   >([])
 
 const handleSelectCard = (value: CardValue) => {
+  //console.log("Carte sélectionnée :", value)
   setSelectedCard(value)
+  //console.log("selectedCard =", selectedCard)
 
-  // plus tard → envoyer au backend
+  // plus tard envoyer au backend
   setVotes(prev => [
     ...prev,
-    { userId: "me", value }
+    { userId: "1", value: selectedCard }
   ])
 }
 
@@ -36,6 +38,19 @@ const getCardImage = (card: CardValue) => {
   return typeof card === "number"
     ? `/cards/cartes_${card}.svg`
     : `/cards/cartes_${card}.svg`
+}
+
+const handleValidateVote = () => {
+  if (selectedCard === null) return
+  
+
+  // mock
+  setVotes(prev => [
+    ...prev,
+    { userId: "1", value: selectedCard }
+  ])
+  console.log("Vote validé :", selectedCard)
+
 }
 
 
@@ -68,7 +83,7 @@ return (
               key={card}
               onClick={() => handleSelectCard(card as CardValue)}
               className={`
-                w-16 h-24 rounded-lg border flex items-center justify-center
+              cursor-pointer w-16 h-24 rounded-lg border flex items-center justify-center
                 transition
                 ${selectedCard === card
                   ? "border-indigo-600 ring-2 ring-indigo-200"
@@ -78,11 +93,18 @@ return (
               <img
         src={getCardImage(card as CardValue)}
         alt={`Carte ${card}`}
-        className="w-full h-full p-2 object-contain pointer-events-none"
+        className="w-full h-full p-2 object-contain "
       />
             </button>
           ))}
         </div>
+        <button
+            className={`w-full py-2 rounded text-white ${selectedCard !== null ? "bg-green-600 hover:bg-green-700 cursor-pointer" : "bg-gray-300 cursor-not-allowed"}`}
+            disabled={selectedCard === null}
+            onClick={handleValidateVote}
+          >
+            Valider
+          </button>
 
       </div>
     </div>

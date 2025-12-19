@@ -2,14 +2,20 @@ import { useState, useEffect } from "react"
 import { useSession } from "../context/SessionContext"
 import { fetchTasks, subscribeToTasks } from "../services/tasks"
 import { fetchVotes, submitVote } from "../services/votes"
-import { getSessionParticipants } from "../services/sessions"
+import { getSessionParticipants, deactivateSession } from "../services/sessions"
 import type { Tasks } from "../lib/supabase"
 import type { Votes } from "../lib/supabase"
 
 // valeurs possibles d'une cartes de planning poker 
 type CardValue = 0 | 1 | 2 | 3 | 5 | 8 | 13 | 20 | 40 | "coffee" | "question";
 
-export function GameBlock() {
+// Historique des votes par tâche
+type TaskVoteHistory = {
+  taskTitle: string;
+  votes: { userId: string; value: CardValue | null }[];
+};
+
+export function GameBlock({ onOpenHome }: { onOpenHome: () => void }) {
 
   // carte sélectionné par l'utilisateur pour la tâche active
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
@@ -26,7 +32,13 @@ export function GameBlock() {
   const [participantCount, setParticipantCount] = useState(0);
   // nombre de participants ayant voté
   const [voteCount, setVoteCount] = useState(0);
-  const { currentSession, currentParticipant } = useSession()
+  // session terminée
+  const [sessionEnded, setSessionEnded] = useState(false);
+  // affichage du récapitulatif final (20 secondes)
+  const [showFinalResults, setShowFinalResults] = useState(false);
+  // historique de tous les votes
+  const [voteHistory, setVoteHistory] = useState<TaskVoteHistory[]>([]);
+  const { currentSession, currentParticipant, setCurrentSession, setCurrentParticipant } = useSession()
 
   // sélection de la tâche en cours dans la liste tasks
   const currentTask = tasks[currentTaskIndex] ?? null;
@@ -132,12 +144,33 @@ const handleValidateVote = async () => {
   setVotes(mapped)
   setShowResults(true)
 
+  // Sauvegarder les votes de cette tâche dans l'historique
+  setVoteHistory(prev => [...prev, { taskTitle: currentTask.title, votes: mapped }]);
+
+  // Vérifier si c'était la dernière tâche
+  const isLastTask = currentTaskIndex >= tasks.length - 1;
+
   // Passer au vote de la tâche suivante au bout de 5 secondes
-  setTimeout(() => {
+  setTimeout(async () => {
     setShowResults(false)
     setSelectedCard(null)
     setVotes([])
-    setCurrentTaskIndex((prev) => (prev + 1 < tasks.length ? prev + 1 : prev))
+    
+    if (isLastTask && currentSession) {
+      // Afficher le récapitulatif final pendant 20 secondes
+      setShowFinalResults(true);
+      
+      setTimeout(async () => {
+        // Fermer la session après 20 secondes
+        await deactivateSession(currentSession.id);
+        setShowFinalResults(false);
+        setSessionEnded(true);
+        setCurrentSession(null);
+        setCurrentParticipant(null);
+      }, 20000);
+    } else {
+      setCurrentTaskIndex((prev) => prev + 1)
+    }
   }, 5000)
 };
 
@@ -146,11 +179,47 @@ const handleValidateVote = async () => {
 return (
   <div className="bg-white rounded-2xl shadow-xl ring-1 ring-gray-100 p-6 w-auto">
 
-    {/* Nombre de participants et votes */}
-    <div className="flex justify-between mb-4">
-      <span className="text-sm text-gray-500">{participantCount} participant{participantCount > 1 ? 's' : ''} connecté{participantCount > 1 ? 's' : ''}</span>
-      <span className="text-sm text-gray-500">{voteCount}/{participantCount} vote{voteCount > 1 ? 's' : ''}</span>
-    </div>
+    {sessionEnded ? (
+      // --- Session terminée ---
+      <div className="flex flex-col gap-4 items-center py-8">
+        <h2 className="text-2xl font-bold text-green-600">🎉 Session terminée !</h2>
+        <p className="text-gray-600">Toutes les tâches ont été estimées.</p>
+        <p className="text-sm text-gray-500">Merci pour votre participation !</p>
+        <button
+          onClick={onOpenHome}
+          className="mt-4 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+        >
+          Retour à l'accueil
+        </button>
+      </div>
+    ) : showFinalResults ? (
+      // --- Récapitulatif final (20 secondes) ---
+      <div className="flex flex-col gap-6">
+        <h2 className="text-2xl font-bold text-gray-800 text-center">📊 Récapitulatif des votes</h2>
+        <p className="text-sm text-gray-500 text-center">La session se fermera automatiquement dans quelques secondes...</p>
+        <div className="space-y-6 max-h-96 overflow-y-auto">
+          {voteHistory.map((task, idx) => (
+            <div key={idx} className="border rounded-lg p-4">
+              <h3 className="font-semibold text-gray-800 mb-3">{task.taskTitle}</h3>
+              <div className="flex flex-wrap gap-2">
+                {task.votes.map((v, vIdx) => (
+                  <div key={vIdx} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
+                    <span className="text-sm font-medium text-gray-700">{v.userId}:</span>
+                    <img src={getCardImage(v.value)} alt={`${v.value}`} className="w-8 h-12 object-contain" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    ) : (
+      <>
+        {/* Nombre de participants et votes */}
+        <div className="flex justify-between mb-4">
+          <span className="text-sm text-gray-500">{participantCount} participant{participantCount > 1 ? 's' : ''} connecté{participantCount > 1 ? 's' : ''}</span>
+          <span className="text-sm text-gray-500">{voteCount}/{participantCount} vote{voteCount > 1 ? 's' : ''}</span>
+        </div>
 
     {showResults ? (
       // --- Vue résultats ---
@@ -192,6 +261,8 @@ return (
 
         <p className="text-center text-sm text-gray-500">Carte sélectionnée : {String(selectedCard)}</p>
       </div>
+    )}
+      </>
     )}
   </div>
 )

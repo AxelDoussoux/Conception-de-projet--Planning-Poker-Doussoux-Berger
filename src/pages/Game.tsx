@@ -99,81 +99,50 @@ const handleValidateVote = async () => {
 
 
 
-return (<div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-start justify-center p-6">
-<div className="w-full max-w-lg bg-white rounded-2xl shadow-xl ring-1 ring-gray-100">
+return (
+  <div className="bg-white rounded-2xl shadow-xl ring-1 ring-gray-100 p-6 w-auto">
 
-  {/* Header commun aux deux vues */}
-  <header className="px-6 py-4 text-center border-b">
-    <h1 className="text-3xl font-extrabold text-gray-800">
-      Planning Poker
-    </h1>
-    <p className="mt-2 text-sm text-gray-500">
-      Estimez les tâches en équipe rapidement
-    </p>
-  </header>
-
-  {showResults ? (
-    // --- Vue résultats ---
-    <div className="p-6">
-      <h2 className="text-2xl font-bold text-center mb-4">
-        Résultats des votes
-      </h2>
-      <div className="space-y-2">
-        {votes.map(v => (
-           <div key={v.userId} className="flex items-center gap-3">
-           <span className="font-medium">{v.userId} a choisi</span>
-           <img
-             src={getCardImage(v.value)}      // <-- ici
-             alt={`Carte ${v.value}`}
-             className="w-16 h-24 object-contain"
-           />
-         </div>
-        ))}
+    {showResults ? (
+      // --- Vue résultats ---
+      <div className="flex flex-col gap-4">
+        <h2 className="text-xl font-bold text-gray-800">Résultats des votes</h2>
+        <div className="space-y-2">
+          {votes.map(v => (
+            <div key={v.userId} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <span className="font-medium text-gray-700">{v.userId} a choisi</span>
+              <img src={getCardImage(v.value)} alt={`Carte ${v.value}`} className="w-12 h-18 object-contain" />
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  ) : (
-    // --- Vue normale avec la tâche et les cartes ---
-    <div className="p-6 flex flex-col gap-8">
-      <h2 className="text-xl font-semibold text-gray-800 text-center">
-        {currentTask.title}
-      </h2>
+    ) : (
+      // --- Vue normale avec la tâche et les cartes ---
+      <div className="flex flex-col gap-6">
+        <h2 className="text-xl font-bold text-gray-800 text-center">{currentTask?.title ?? 'Aucune tâche'}</h2>
 
-      <div className="h-15" /> 
-      <div className="flex justify-center gap-3 flex-wrap">
-        {[0,1,2,3,5,8,13,20,40,"coffee","question"].map(card => (
-          <button
-            key={card}
-            onClick={() => handleSelectCard(card as CardValue)}
-            className={`
-              cursor-pointer w-16 h-24 rounded-lg border flex items-center justify-center
-              transition
-              ${selectedCard === card
-                ? "border-indigo-600 ring-2 ring-indigo-200"
-                : "border-gray-300 hover:border-gray-400"}
-            `}
-          >
-            <img
-              src={getCardImage(card as CardValue)}
-              alt={`Carte ${card}`}
-              className="w-full h-full p-2 object-contain pointer-events-none"
-            />
-          </button>
-        ))}
+        <div className="flex justify-center gap-2 flex-wrap">
+          {[0,1,2,3,5,8,13,20,40,"coffee","question"].map(card => (
+            <button
+              key={String(card)}
+              onClick={() => handleSelectCard(card as CardValue)}
+              className={`w-14 h-20 rounded-lg border flex items-center justify-center transition ${selectedCard === card ? 'border-indigo-600 ring-2 ring-indigo-200' : 'border-gray-300 hover:border-gray-400'}`}
+            >
+              <img src={getCardImage(card as CardValue)} alt={`Carte ${card}`} className="w-full h-full p-1 object-contain pointer-events-none" />
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={handleValidateVote}
+          disabled={selectedCard === null}
+          className="w-full px-4 py-2 bg-green-600 text-white rounded-lg disabled:opacity-50"
+        >
+          Valider
+        </button>
+
+        <p className="text-center text-sm text-gray-500">Carte sélectionnée : {String(selectedCard)}</p>
       </div>
-      <button
-        className="cursor-pointer relative z-50 bg-green-600 text-white px-4 py-2 rounded"
-        disabled={selectedCard === null}
-        onClick={handleValidateVote}
-      >
-        Valider
-      </button>
-      <p className="text-center text-sm text-gray-500">
-        Carte sélectionnée : {String(selectedCard)}
-      </p>
-    </div>
-  )}
-
-</div>
-</div>
+    )}
+  </div>
 )
 }

@@ -7,10 +7,11 @@ import { createSession } from "../services/sessions"
 
 export function SessionBlock({ onOpenGame }: { onOpenGame: () => void }): JSX.Element {
     const [sessionName, setSessionName] = useState("")
-    const [pseudo, setPseudo] = useState<string>("")
     const [taskTitle, setTaskTitle] = useState("")
     const [tasks, setTasks] = useState<Tasks[]>([])
     const [gameMode, setGameMode] = useState<GameMode>("strict");
+
+    const { currentParticipant, setCurrentSession, setCurrentParticipant } = useSession()
 
     const addTask = () => {
         if (!taskTitle.trim()) return
@@ -34,94 +35,74 @@ export function SessionBlock({ onOpenGame }: { onOpenGame: () => void }): JSX.El
         setTasks(prev => prev.filter(task => task.id !== id))
     }
 
-    const { setCurrentSession, setCurrentParticipant } = useSession()
-
     const handleContinue = async () => {
-        if (!pseudo.trim() || !sessionName.trim()) return alert('Entrez un pseudo et un nom de session');
-        await createSession(sessionName, pseudo, setCurrentSession, setCurrentParticipant);
+        if (!currentParticipant) return alert('Vous devez d\'abord vous connecter depuis Home');
+        if (!sessionName.trim()) return alert('Entrez un nom de session');
+        await createSession(sessionName, currentParticipant.name, gameMode, setCurrentSession, setCurrentParticipant);
         onOpenGame()
     }
     
     return (
-        <div className="min-h-screen bg-gray-50 flex justify-center p-6">
-        <div className="w-full max-w-xl bg-white rounded-2xl shadow p-6 space-y-6">
-        
-        
-            <h1 className="text-2xl font-bold text-gray-800">
-            Créer la session
-            </h1>
+        <div className="bg-white rounded-2xl shadow-xl ring-1 ring-gray-100 p-6 w-auto">
+            <h2 className="text-xl font-bold text-gray-800 mb-6">Créer la session</h2>
     
             {/* Nom de la session */}
-            <div>
-            <label className="block text-sm font-medium text-gray-700">
-                Nom de la session
-            </label>
-            <input
-                value={sessionName}
-                onChange={e => setSessionName(e.target.value)}
-                className="mt-1 w-full px-3 py-2 border rounded-lg"
-                placeholder="Sprint 42 – Backlog"
-            />
+            <div className="flex flex-col gap-2 mb-4">
+                <label className="text-sm font-medium text-gray-700">Nom de la session</label>
+                <input
+                    value={sessionName}
+                    onChange={e => setSessionName(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    placeholder="Sprint 42 – Backlog"
+                />
             </div>
-            {/* Choix du mode de jeu */}
-            <div>
-            <label className="block text-sm font-medium text-gray-700">
-                Mode de jeu
-            </label>
 
-            <select
-                value={gameMode}
-                onChange={e => setGameMode(e.target.value as GameMode)}
-                className="mt-1 w-full px-3 py-2 border rounded-lg"
-            >
-                <option value="strict">Strict (unanimité)</option>
-                <option value="mean">Moyenne</option>
-            </select>
+            {/* Choix du mode de jeu */}
+            <div className="flex flex-col gap-2 mb-4">
+                <label className="text-sm font-medium text-gray-700">Mode de jeu</label>
+                <select
+                    value={gameMode}
+                    onChange={e => setGameMode(e.target.value as GameMode)}
+                    className="w-full px-3 py-2 border rounded-lg"
+                >
+                    <option value="strict">Strict (unanimité)</option>
+                    <option value="mean">Moyenne</option>
+                </select>
             </div>
+
             {/* Ajout de tâche */}
-            <div className="flex gap-2">
-            <input
-                value={taskTitle}
-                onChange={e => setTaskTitle(e.target.value)}
-                className="flex-1 px-3 py-2 border rounded-lg"
-                placeholder="Nouvelle tâche à estimer"
-            />
-            <button
-                onClick={addTask}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg"
-            >
-                Ajouter
-            </button>
+            <div className="flex flex-col gap-2 mb-4">
+                <label className="text-sm font-medium text-gray-700">Ajouter une tâche</label>
+                <div className="flex gap-2">
+                    <input
+                        value={taskTitle}
+                        onChange={e => setTaskTitle(e.target.value)}
+                        className="flex-1 px-3 py-2 border rounded-lg"
+                        placeholder="Nouvelle tâche à estimer"
+                    />
+                    <button onClick={addTask} className="px-4 py-2 bg-indigo-600 text-white rounded-lg">Ajouter</button>
+                </div>
             </div>
             {/* Liste des tâches */}
             {tasks.length > 0 && (
-            <ul className="space-y-2">
-                {tasks.map(task => (
-                <li
-                    key={task.id}
-                    className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
-                >
-                    <span>{task.title}</span>
-                    <button
-                    onClick={() => removeTask(task.id)}
-                    className="text-sm text-red-500 hover:text-red-700"
-                    >
-                    Supprimer
-                    </button>
-                </li>
-                ))}
-            </ul>
+                <ul className="space-y-2 mb-4">
+                    {tasks.map(task => (
+                        <li key={task.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <span>{task.title}</span>
+                            <button onClick={() => removeTask(task.id)} className="text-sm text-red-500 hover:text-red-700">Supprimer</button>
+                        </li>
+                    ))}
+                </ul>
             )}
-    
-            {/* Action future */}
+
+            {/* Action */}
             <button
-            onClick={handleContinue}
-            disabled={tasks.length === 0}
-            className="w-full py-2 bg-green-600 text-white rounded-lg disabled:opacity-50"
+                onClick={handleContinue}
+                disabled={tasks.length === 0}
+                className="w-full px-4 py-2 bg-green-600 text-white rounded-lg disabled:opacity-50"
             >
-            Lancer la session
+                Lancer la session
             </button>
         </div>
-        </div>
     )
-    }
+}

@@ -29,7 +29,7 @@ export function HomeBlock({ onOpenSession, onOpenGame }: { onOpenSession: () => 
   // Créer une session
   const handleCreate = async () => {
     if (!sessionName.trim()) return alert("Entrez un nom de session")
-    await createSession(sessionName.trim(), pseudo.trim(), setCurrentSession, setCurrentParticipant)
+    await createSession(sessionName.trim(), pseudo.trim(), "strict", setCurrentSession, setCurrentParticipant)
     onOpenSession()
   }
 
@@ -41,7 +41,7 @@ export function HomeBlock({ onOpenSession, onOpenGame }: { onOpenSession: () => 
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl ring-1 ring-gray-100 p-6 max-w-md mx-auto">
+    <div className="bg-white rounded-2xl shadow-xl ring-1 ring-gray-100 p-6 w-auto">
       {!loggedIn ? (
         // Étape 1 : Login
         <div className="flex flex-col gap-4">

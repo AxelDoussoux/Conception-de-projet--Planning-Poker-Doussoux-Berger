@@ -68,7 +68,7 @@ export async function addParticipantToSession(sessionId: string, participantId: 
   return data;
 }
 
-export async function createSession(sessionName: string, pseudo: string, setCurrentSession: (s: Session | null) => void, setCurrentParticipant: (p: Participant | null) => void): Promise<void> {
+export async function createSession(sessionName: string, pseudo: string, gameMode: string, setCurrentSession: (s: Session | null) => void, setCurrentParticipant: (p: Participant | null) => void): Promise<void> {
   try {
     const participant: Participant | null = await findParticipantByName(pseudo.trim());
     if (!participant) {
@@ -82,7 +82,7 @@ export async function createSession(sessionName: string, pseudo: string, setCurr
     const uniqueCode = await generateUniqueCode();
     const { data: session, error } = await supabase
       .from('sessions')
-      .insert([{ name: sessionName, is_active: true, code: uniqueCode }])
+      .insert([{ name: sessionName, is_active: true, code: uniqueCode, gamemode: gameMode }])
       .select()
       .single();
 
@@ -101,7 +101,7 @@ export async function createSession(sessionName: string, pseudo: string, setCurr
 
     setCurrentSession(createdSession);
     setCurrentParticipant(connectedParticipant);
-    alert(`Session créée avec succès !\n\nNom : ${createdSession.name}\nCode : ${createdSession.code}\nParticipant : ${connectedParticipant.name}`);
+    alert(`Session créée avec succès !\n\nNom : ${createdSession.name}\nCode : ${createdSession.code}\nParticipant : ${connectedParticipant.name}\nMode de jeu : ${createdSession.gamemode}`);
   } catch (error) {
     console.error('Erreur lors de la création de la session :', error);
     alert('Échec de la création de la session.');

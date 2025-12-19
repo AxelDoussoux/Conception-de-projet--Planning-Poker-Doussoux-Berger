@@ -22,6 +22,10 @@ export function GameBlock() {
 
   // listes des tâches à évaluer (récupérées depuis le service)
   const [tasks, setTasks] = useState<Tasks[]>([]);
+  // nombre de participants connectés
+  const [participantCount, setParticipantCount] = useState(0);
+  // nombre de participants ayant voté
+  const [voteCount, setVoteCount] = useState(0);
   const { currentSession, currentParticipant } = useSession()
 
   // sélection de la tâche en cours dans la liste tasks
@@ -33,6 +37,24 @@ export function GameBlock() {
     let removeFn: (() => Promise<void>) | undefined;
 
     void fetchTasks(currentSession.id).then(setTasks).catch(err => console.error(err));
+
+    // Fonction pour rafraîchir les compteurs
+    const refreshCounts = async () => {
+      try {
+        const participants = await getSessionParticipants(currentSession.id);
+        if (participants) setParticipantCount(participants.length);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    // Rafraîchissement initial
+    void refreshCounts();
+
+    // Rafraîchissement toutes les 3 secondes
+    const interval = setInterval(() => {
+      void refreshCounts();
+    }, 3000);
 
     try {
       const maybe = subscribeToTasks(currentSession.id, (fetched: Tasks[]) => setTasks(fetched));
@@ -47,8 +69,31 @@ export function GameBlock() {
 
     return () => {
       if (removeFn) void removeFn()
+      clearInterval(interval)
     }
   }, [currentSession])
+
+  // Rafraîchir le nombre de votes pour la tâche en cours
+  useEffect(() => {
+    if (!currentTask) {
+      setVoteCount(0);
+      return;
+    }
+
+    const refreshVoteCount = async () => {
+      try {
+        const votes = await fetchVotes(currentTask.id);
+        setVoteCount(votes.length);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    void refreshVoteCount();
+    const interval = setInterval(() => void refreshVoteCount(), 2000);
+
+    return () => clearInterval(interval);
+  }, [currentTask])
 
 // gère la sélection des cartes avant la validation
 const handleSelectCard = (value: CardValue) => setSelectedCard(value)
@@ -101,6 +146,12 @@ const handleValidateVote = async () => {
 
 return (
   <div className="bg-white rounded-2xl shadow-xl ring-1 ring-gray-100 p-6 w-auto">
+
+    {/* Nombre de participants et votes */}
+    <div className="flex justify-between mb-4">
+      <span className="text-sm text-gray-500">{participantCount} participant{participantCount > 1 ? 's' : ''} connecté{participantCount > 1 ? 's' : ''}</span>
+      <span className="text-sm text-gray-500">{voteCount}/{participantCount} vote{voteCount > 1 ? 's' : ''}</span>
+    </div>
 
     {showResults ? (
       // --- Vue résultats ---

@@ -3,6 +3,7 @@ import { SlUser } from "react-icons/sl"
 import type { Task } from "../Types/Task"
 import { useNavigate } from "react-router-dom"
 
+
 export function CreateSession() {
     const [sessionName, setSessionName] = useState("")
     const [taskTitle, setTaskTitle] = useState("")

@@ -1,7 +1,7 @@
 import { useState, type JSX } from "react"
 import { SlUser } from "react-icons/sl"
 import { useNavigate } from "react-router-dom"
-import {CreateSession} from "./Session"
+
 
 /**
  * Page d'accueil de l'application Planning Poker
@@ -27,7 +27,7 @@ export default function Home(): JSX.Element {
   const navigate = useNavigate()
 
   const handleContinue = () => {
-        newSession = true
+    navigate("/session")
   }
 
   
@@ -148,7 +148,6 @@ export default function Home(): JSX.Element {
 
         
       </div>
-      <CreateSession/>
     </div>
     
 

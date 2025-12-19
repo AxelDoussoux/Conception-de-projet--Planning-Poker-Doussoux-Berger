@@ -2,13 +2,14 @@ import { useState, type JSX } from "react"
 import { SlUser } from "react-icons/sl"
 import type { Task } from "../Types/Task"
 import { useNavigate } from "react-router-dom"
+import type { GameMode } from "../Types/GameMode"
 
 
 export function CreateSession() {
     const [sessionName, setSessionName] = useState("")
     const [taskTitle, setTaskTitle] = useState("")
     const [tasks, setTasks] = useState<Task[]>([])
-    
+    const [gameMode, setGameMode] = useState<GameMode>("strict");
 
     const addTask = () => {
         if (!taskTitle.trim()) return
@@ -63,7 +64,21 @@ export function CreateSession() {
                 placeholder="Sprint 42 – Backlog"
             />
             </div>
-    
+            {/* Choix du mode de jeu */}
+            <div>
+            <label className="block text-sm font-medium text-gray-700">
+                Mode de jeu
+            </label>
+
+            <select
+                value={gameMode}
+                onChange={e => setGameMode(e.target.value as GameMode)}
+                className="mt-1 w-full px-3 py-2 border rounded-lg"
+            >
+                <option value="strict">Strict (unanimité)</option>
+                <option value="mean">Moyenne</option>
+            </select>
+            </div>
             {/* Ajout de tâche */}
             <div className="flex gap-2">
             <input
@@ -79,7 +94,6 @@ export function CreateSession() {
                 Ajouter
             </button>
             </div>
-    
             {/* Liste des tâches */}
             {tasks.length > 0 && (
             <ul className="space-y-2">
